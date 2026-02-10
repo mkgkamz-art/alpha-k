@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE Watchlist Management v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Roboto+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F0B90B",
+                        "background-dark": "#0B0E11",
+                        "surface-dark": "#1E2329",
+                        "surface-alt": "#161A1E",
+                        "tertiary-dark": "#2B3139",
+                        "text-primary": "#EAECEF",
+                        "text-secondary": "#848E9C",
+                        "success": "#0ECB81",
+                        "danger": "#F6465D",
+                        "action-icon": "#474D57"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["Roboto Mono", "monospace"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-background-dark text-text-primary font-display antialiased overflow-hidden h-screen flex;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0E11;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2B3139;
+        }
+        tbody tr:hover {
+            background-color: #2B3139 !important;
+        }
+    </style>
+</head>
+<body>
+<aside class="w-[240px] flex-shrink-0 flex flex-col border-r border-tertiary-dark bg-background-dark h-full z-20">
+<div class="h-16 flex items-center px-6 border-b border-tertiary-dark">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-surface-dark flex items-center justify-center border border-tertiary-dark">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">token</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-text-primary text-base font-bold leading-none tracking-wide">BLOSAFE</h1>
+<p class="text-text-secondary text-[10px] font-medium mt-1 uppercase tracking-wider">Terminal v2.4</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-6 flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:text-text-primary hover:bg-surface-dark transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded bg-surface-dark border-l-2 border-primary text-primary transition-colors" href="#">
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1; font-size: 20px;">list_alt</span>
+<span class="text-sm font-bold">Watchlist</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:text-text-primary hover:bg-surface-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary" style="font-size: 20px;">notifications</span>
+<span class="text-sm font-medium">Alerts</span>
+<span class="ml-auto bg-primary text-background-dark text-[10px] font-bold px-1.5 py-0.5 rounded-full">8</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:text-text-primary hover:bg-surface-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary" style="font-size: 20px;">water_drop</span>
+<span class="text-sm font-medium">Whale Tracking</span>
+</a>
+<div class="my-4 border-t border-tertiary-dark mx-3"></div>
+<p class="px-3 text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">Tools</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:text-text-primary hover:bg-surface-dark transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">candlestick_chart</span>
+<span class="text-sm font-medium">Chart Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:text-text-primary hover:bg-surface-dark transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">history</span>
+<span class="text-sm font-medium">History</span>
+</a>
+</nav>
+<div class="p-4 border-t border-tertiary-dark">
+<button class="flex items-center gap-3 w-full p-2 hover:bg-surface-dark rounded transition-colors text-left group">
+<div class="size-9 rounded bg-tertiary-dark flex items-center justify-center overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-j6Mkfpyg1vPyzuL7ytXG8vqgJA5-rhmFvLJ6nao7LCDcQGz6Z8I7-iH2TXlOajbFAZe5z82_-iaxsAJ-lecKqLuuETbeMhUghKTUU2_n7hqkGA-NWh48YGCXUTMNr7hRBv4QuO1mHrsXJq60u2ObPr3LrMmpWg7UGqxIiE4ojGTiPQnA-UOmnWY9GxdIig-FIC6kj_49JwcDS5v7NYv1dLp7lvWPxZBzvxrO36C_tkHeznFu5UYWxg7QRmIx4AZEivjRmaPImGB1"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-medium text-text-primary truncate">Alex Trader</span>
+<span class="text-[10px] text-text-secondary uppercase">Pro Plan</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary ml-auto group-hover:text-text-primary" style="font-size: 18px;">settings</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full bg-background-dark overflow-hidden relative">
+<header class="h-16 flex items-center justify-between px-8 border-b border-tertiary-dark bg-background-dark shrink-0">
+<div class="flex items-center gap-4">
+<h2 class="text-text-primary font-bold text-lg">My Watchlist <span class="text-text-secondary font-normal ml-1">(12)</span></h2>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" style="font-size: 18px;">search</span>
+<input class="w-full bg-surface-dark border border-tertiary-dark rounded pl-10 pr-4 py-1.5 text-sm text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary transition-all" placeholder="Search tokens..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary hover:bg-[#d9a80a] text-background-dark text-sm font-bold rounded px-4 py-2 flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px; font-weight: bold;">add</span>
+                Add Token
+            </button>
+<div class="flex items-center gap-2">
+<button class="size-9 flex items-center justify-center rounded bg-surface-dark border border-tertiary-dark text-text-secondary hover:text-text-primary transition-colors relative">
+<span class="material-symbols-outlined" style="font-size: 20px;">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full border border-surface-dark"></span>
+</button>
+<button class="size-9 flex items-center justify-center rounded bg-surface-dark border border-tertiary-dark text-text-secondary hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">help</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8 scroll-smooth">
+<div class="max-w-[1440px] mx-auto flex flex-col gap-6">
+<div class="flex items-center justify-end gap-3">
+<div class="relative">
+<select class="appearance-none bg-tertiary-dark text-text-primary text-xs font-bold rounded pl-3 pr-8 py-2 border border-transparent hover:border-text-secondary focus:outline-none focus:ring-0 cursor-pointer uppercase">
+<option>Filter: All Assets</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" style="font-size: 16px;">expand_more</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-tertiary-dark text-text-primary text-xs font-bold rounded pl-3 pr-8 py-2 border border-transparent hover:border-text-secondary focus:outline-none focus:ring-0 cursor-pointer uppercase">
+<option>Sort by: Rank</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" style="font-size: 16px;">expand_more</span>
+</div>
+</div>
+<div class="bg-surface-dark border border-tertiary-dark rounded overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-tertiary-dark text-text-secondary uppercase text-[11px] font-bold tracking-widest">
+<th class="px-6 py-4 w-12 text-center">#</th>
+<th class="px-6 py-4 min-w-[180px]">Token</th>
+<th class="px-6 py-4 text-right">Price</th>
+<th class="px-6 py-4 text-right">24h%</th>
+<th class="px-6 py-4 text-right">7d%</th>
+<th class="px-6 py-4 text-center">Alerts</th>
+<th class="px-6 py-4">Last Alert</th>
+<th class="px-6 py-4 w-[160px]">Whale Activity</th>
+<th class="px-6 py-4 text-center">Rules</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<tr class="bg-surface-dark border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">1</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#f7931a] flex items-center justify-center text-white font-bold text-[10px]">BTC</div>
+<div>
+<div class="font-bold text-text-primary">Bitcoin</div>
+<div class="text-[10px] text-text-secondary">BTC</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$64,231.00</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-1.2%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+4.5%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-primary px-2 py-0.5 rounded text-[11px] font-bold">24</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">2m ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full" style="width: 85%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">3 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-alt border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">2</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#627eea] flex items-center justify-center text-white font-bold text-[10px]">ETH</div>
+<div>
+<div class="font-bold text-text-primary">Ethereum</div>
+<div class="text-[10px] text-text-secondary">ETH</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$3,450.00</td>
+<td class="px-6 py-4 text-right font-mono text-success">+0.5%</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-2.1%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">12</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">15m ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-60" style="width: 60%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">2 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-dark border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">3</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#14F195] flex items-center justify-center text-black font-bold text-[10px]">SOL</div>
+<div>
+<div class="font-bold text-text-primary">Solana</div>
+<div class="text-[10px] text-text-secondary">SOL</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$145.20</td>
+<td class="px-6 py-4 text-right font-mono text-success">+5.2%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+12.0%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">8</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">1h ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full" style="width: 75%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">1 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-alt border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">4</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#2D374B] flex items-center justify-center text-white font-bold text-[10px]">ARB</div>
+<div>
+<div class="font-bold text-text-primary">Arbitrum</div>
+<div class="text-[10px] text-text-secondary">ARB</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$1.12</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-3.4%</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-5.6%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">5</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">3h ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-30" style="width: 25%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">1 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-dark border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">5</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#FF0420] flex items-center justify-center text-white font-bold text-[10px]">OP</div>
+<div>
+<div class="font-bold text-text-primary">Optimism</div>
+<div class="text-[10px] text-text-secondary">OP</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$2.45</td>
+<td class="px-6 py-4 text-right font-mono text-success">+1.1%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+0.2%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">3</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">5h ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-20" style="width: 15%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-text-secondary font-medium">1 Paused</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-alt border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">6</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#2775CA] flex items-center justify-center text-white font-bold text-[10px]">$</div>
+<div>
+<div class="font-bold text-text-primary">USD Coin</div>
+<div class="text-[10px] text-text-secondary">USDC</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$1.00</td>
+<td class="px-6 py-4 text-right font-mono text-text-secondary">0.0%</td>
+<td class="px-6 py-4 text-right font-mono text-text-secondary">0.0%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">0</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">-</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-10" style="width: 5%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-text-secondary">0 Rules</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-dark border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">7</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#375BD2] flex items-center justify-center text-white font-bold text-[10px]">L</div>
+<div>
+<div class="font-bold text-text-primary">Chainlink</div>
+<div class="text-[10px] text-text-secondary">LINK</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$18.40</td>
+<td class="px-6 py-4 text-right font-mono text-success">+2.3%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+8.4%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">15</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">30m ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-70" style="width: 70%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">2 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-alt border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">8</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#ff007a] flex items-center justify-center text-white font-bold text-[10px]">U</div>
+<div>
+<div class="font-bold text-text-primary">Uniswap</div>
+<div class="text-[10px] text-text-secondary">UNI</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$7.80</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-0.5%</td>
+<td class="px-6 py-4 text-right font-mono text-danger">-1.2%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">4</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">4h ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-40" style="width: 35%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">1 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-dark border-b border-tertiary-dark/30 group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">9</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#B6509E] flex items-center justify-center text-white font-bold text-[10px]">A</div>
+<div>
+<div class="font-bold text-text-primary">Aave</div>
+<div class="text-[10px] text-text-secondary">AAVE</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$92.50</td>
+<td class="px-6 py-4 text-right font-mono text-success">+4.1%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+15.3%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-primary px-2 py-0.5 rounded text-[11px] font-bold">28</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">10m ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full" style="width: 100%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">4 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-alt group">
+<td class="px-6 py-4 text-center text-text-secondary font-mono">10</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-7 rounded-full bg-[#1AAB9B] flex items-center justify-center text-white font-bold text-[10px]">MKR</div>
+<div>
+<div class="font-bold text-text-primary">Maker</div>
+<div class="text-[10px] text-text-secondary">MKR</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right font-mono text-text-primary">$2,890.00</td>
+<td class="px-6 py-4 text-right font-mono text-success">+1.8%</td>
+<td class="px-6 py-4 text-right font-mono text-success">+3.2%</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-tertiary-dark text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold">2</span>
+</td>
+<td class="px-6 py-4 text-text-secondary text-xs">6h ago</td>
+<td class="px-6 py-4">
+<div class="w-full bg-background-dark rounded-full h-1 overflow-hidden">
+<div class="bg-primary h-full opacity-20" style="width: 20%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-center text-xs text-success font-medium">1 Active</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 text-action-icon">
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">visibility_off</span></button>
+<button class="hover:text-text-primary transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">edit</span></button>
+<button class="hover:text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 18px;">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-surface-dark border border-tertiary-dark rounded p-5 flex items-center justify-between">
+<div>
+<p class="text-text-secondary text-[10px] uppercase font-bold tracking-widest mb-1">Most Active</p>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-bold text-lg">Bitcoin</span>
+<span class="text-text-secondary text-xs font-mono">BTC</span>
+</div>
+</div>
+<div class="text-right">
+<div class="text-2xl font-mono text-primary font-bold">145</div>
+<p class="text-[10px] text-text-secondary uppercase">Alerts / 24h</p>
+</div>
+</div>
+<div class="bg-surface-dark border border-tertiary-dark rounded p-5 flex items-center justify-between">
+<div>
+<p class="text-text-secondary text-[10px] uppercase font-bold tracking-widest mb-1">Highest Whale Activity</p>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-bold text-lg">Aave</span>
+<span class="text-text-secondary text-xs font-mono">AAVE</span>
+</div>
+</div>
+<div class="text-right">
+<div class="text-2xl font-mono text-primary font-bold">$4.2M</div>
+<p class="text-[10px] text-text-secondary uppercase">Volume / 24h</p>
+</div>
+</div>
+<div class="bg-surface-dark border border-tertiary-dark rounded p-5 flex items-center justify-between">
+<div>
+<p class="text-text-secondary text-[10px] uppercase font-bold tracking-widest mb-1">Biggest Mover</p>
+<div class="flex items-center gap-2">
+<span class="text-text-primary font-bold text-lg">Solana</span>
+<span class="text-text-secondary text-xs font-mono">SOL</span>
+</div>
+</div>
+<div class="text-right">
+<div class="text-2xl font-mono text-success font-bold">+5.2%</div>
+<p class="text-[10px] text-text-secondary uppercase">24h Gain</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto py-4">
+<p class="text-xs text-text-secondary">Showing 1-10 of 12 tokens</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 bg-tertiary-dark rounded text-xs text-text-secondary hover:text-text-primary">Previous</button>
+<button class="size-8 bg-primary text-background-dark text-xs font-bold rounded">1</button>
+<button class="size-8 bg-tertiary-dark text-text-primary text-xs font-bold rounded">2</button>
+<button class="px-3 py-1 bg-tertiary-dark rounded text-xs text-text-secondary hover:text-text-primary">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

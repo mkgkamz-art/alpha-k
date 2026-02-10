@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__stitch__*",
+      "mcp__figma-remote-mcp__*",
+      "mcp__supabase__*",
+      "mcp__github__*",
+      "mcp__context7__*",
+      "mcp__lemonsqueezy__*",
+      "mcp__filesystem__*",
+      "mcp__mcp-installer__*"
+    ]
+  }
+}

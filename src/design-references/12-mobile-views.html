@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE Mobile Feed &amp; Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#efba0b",
+                "background-light": "#f8f8f5",
+                "background-dark": "#0B0E11",
+                "card-dark": "#1E2329",
+                "severity-critical": "#ff4d4d",
+                "severity-high": "#efba0b",
+                "severity-low": "#00c853"
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"],
+                "mono": ["JetBrains Mono", "monospace"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .iphone-frame { width: 390px; height: 844px; position: relative; overflow: hidden; }
+        .blur-gradient { background: linear-gradient(180deg, rgba(239, 186, 11, 0.05) 0%, rgba(11, 14, 17, 0) 100%); }
+    </style>
+<style>body { min-height: max(884px, 100dvh); }</style>
+</head>
+<body class="bg-gray-100 flex flex-wrap justify-center gap-10 py-10">
+<!-- VIEW A: ALERT FEED -->
+<div class="iphone-frame bg-background-light dark:bg-background-dark shadow-2xl rounded-[3rem] border-[8px] border-gray-800 dark:border-zinc-800 flex flex-col">
+<header class="pt-10 px-6 pb-4 flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"><span class="material-icons text-background-dark text-xl">security</span></div><h1 class="font-display font-bold text-xl tracking-tight text-zinc-900 dark:text-white">BLOSAFE</h1></div><div class="flex items-center gap-3"><button class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-card-dark flex items-center justify-center text-zinc-600 dark:text-zinc-400"><span class="material-icons text-xl">notifications</span></button><img alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary" data-alt="User profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcWPDw2jiMcn23a3xhPfVP90mzeNEltq-fPmW2u2XOMR6fM1VccmTuzklXOZWuGPYiZ2x19_Az_EEAl3IDsBYWW2ZLhxjM9opwVwevd_3EIB_SibED-SWtvxfhs4YFjv43wFdw73R0hzNURqinR82UcT2vmWPo4aGr8uyZx33R7JZC2pMBu6T8LbeP4HKI1B6ZaKW_78j_TGUlzBxUrBRQXA1GFfZ2aS6UDFnx6UsV9cB2XeO_I1yInlF5Lpmkc_ij8XZto_zODp-z"/></div></header>
+<div class="overflow-x-auto no-scrollbar flex items-center gap-3 px-6 py-2">
+<div class="flex-shrink-0 bg-zinc-200 dark:bg-card-dark rounded-full px-4 py-1.5 flex items-center gap-2 border border-zinc-300 dark:border-zinc-800"><span class="text-[10px] font-bold text-zinc-500 uppercase">BTC</span><span class="font-mono text-sm dark:text-white">$64,231</span><span class="text-[10px] text-severity-low font-bold">+1.2%</span></div>
+<div class="flex-shrink-0 bg-zinc-200 dark:bg-card-dark rounded-full px-4 py-1.5 flex items-center gap-2 border border-zinc-300 dark:border-zinc-800"><span class="text-[10px] font-bold text-zinc-500 uppercase">ETH</span><span class="font-mono text-sm dark:text-white">$3,412</span><span class="text-[10px] text-severity-critical font-bold">-0.8%</span></div>
+<div class="flex-shrink-0 bg-zinc-200 dark:bg-card-dark rounded-full px-4 py-1.5 flex items-center gap-2 border border-zinc-300 dark:border-zinc-800"><span class="text-[10px] font-bold text-zinc-500 uppercase">SOL</span><span class="font-mono text-sm dark:text-white">$145.2</span><span class="text-[10px] text-severity-low font-bold">+4.5%</span></div>
+<div class="flex-shrink-0 bg-zinc-200 dark:bg-card-dark rounded-full px-4 py-1.5 flex items-center gap-2 border border-zinc-300 dark:border-zinc-800"><span class="material-icons text-[12px] text-primary">local_gas_station</span><span class="font-mono text-sm dark:text-white">12 gwei</span></div>
+</div>
+<div class="overflow-x-auto no-scrollbar flex items-center gap-2 px-6 py-4"><button class="bg-primary text-background-dark font-semibold px-5 py-2 rounded-full text-sm whitespace-nowrap">All Alerts</button><button class="bg-zinc-200 dark:bg-card-dark text-zinc-600 dark:text-zinc-400 font-medium px-5 py-2 rounded-full text-sm border border-zinc-300 dark:border-zinc-800 whitespace-nowrap">Whales</button><button class="bg-zinc-200 dark:bg-card-dark text-zinc-600 dark:text-zinc-400 font-medium px-5 py-2 rounded-full text-sm border border-zinc-300 dark:border-zinc-800 whitespace-nowrap">Liquidity</button><button class="bg-zinc-200 dark:bg-card-dark text-zinc-600 dark:text-zinc-400 font-medium px-5 py-2 rounded-full text-sm border border-zinc-300 dark:border-zinc-800 whitespace-nowrap">Burned</button></div>
+<main class="flex-1 overflow-y-auto px-6 pb-24 space-y-3 no-scrollbar">
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 border-l-[3px] border-severity-critical shadow-sm flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-severity-critical/10 flex items-center justify-center flex-shrink-0"><span class="material-icons text-severity-critical">waves</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold uppercase tracking-wider text-severity-critical">Critical Whale Move</span><span class="text-[10px] text-zinc-500 font-medium">2m ago</span></div><h3 class="font-bold text-zinc-900 dark:text-white text-sm mb-1 truncate">Whale moved 1,250 BTC ($80.2M)</h3><p class="text-xs text-zinc-500 line-clamp-1">Unknown wallet to Coinbase. Potential selling pressure detected...</p></div></div>
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 border-l-[3px] border-severity-high shadow-sm flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-severity-high/10 flex items-center justify-center flex-shrink-0"><span class="material-icons text-severity-high">water_drop</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold uppercase tracking-wider text-severity-high text-primary">High Liquidity Alert</span><span class="text-[10px] text-zinc-500 font-medium">12m ago</span></div><h3 class="font-bold text-zinc-900 dark:text-white text-sm mb-1 truncate">Uniswap V3 ETH/USDC +$4.2M</h3><p class="text-xs text-zinc-500 line-clamp-1">Significant liquidity added to the 0.05% pool fee tier.</p></div></div>
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 border-l-[3px] border-severity-low shadow-sm flex items-start gap-4"><div class="w-10 h-10 rounded-full bg-severity-low/10 flex items-center justify-center flex-shrink-0"><span class="material-icons text-severity-low">fiber_new</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold uppercase tracking-wider text-severity-low">New Pair Created</span><span class="text-[10px] text-zinc-500 font-medium">45m ago</span></div><h3 class="font-bold text-zinc-900 dark:text-white text-sm mb-1 truncate">$BLOSAFE Token Deployed</h3><p class="text-xs text-zinc-500 line-clamp-1">Contract verified. Initial liquidity locked for 1 year.</p></div></div>
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 border-l-[3px] border-zinc-500 shadow-sm flex items-start gap-4 opacity-70"><div class="w-10 h-10 rounded-full bg-zinc-500/10 flex items-center justify-center flex-shrink-0"><span class="material-icons text-zinc-500">trending_up</span></div><div class="flex-1 min-w-0"><div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Market Milestone</span><span class="text-[10px] text-zinc-500 font-medium">1h ago</span></div><h3 class="font-bold text-zinc-900 dark:text-white text-sm mb-1 truncate">SOL hits $145 All-Time High</h3><p class="text-xs text-zinc-500 line-clamp-1">Solana breaks resistance levels with high buying volume.</p></div></div>
+</main>
+<div class="absolute bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-zinc-200 dark:border-zinc-800 px-6 py-4 flex justify-between items-center pb-8">
+<div class="flex flex-col items-center gap-1 text-primary"><span class="material-icons">home</span><span class="text-[10px] font-bold">Home</span></div>
+<div class="flex flex-col items-center gap-1 text-zinc-500"><span class="material-icons">notifications</span><span class="text-[10px] font-medium">Alerts</span></div>
+<div class="relative -top-6"><div class="w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center border-[4px] border-background-light dark:border-background-dark"><span class="material-icons text-background-dark text-3xl">add</span></div></div>
+<div class="flex flex-col items-center gap-1 text-zinc-500"><span class="material-icons">insights</span><span class="text-[10px] font-medium">Signals</span></div>
+<div class="flex flex-col items-center gap-1 text-zinc-500"><span class="material-icons">more_horiz</span><span class="text-[10px] font-medium">More</span></div>
+</div>
+</div>
+<!-- VIEW B: ALERT DETAIL -->
+<div class="iphone-frame bg-background-light dark:bg-background-dark shadow-2xl rounded-[3rem] border-[8px] border-gray-800 dark:border-zinc-800 flex flex-col">
+<header class="pt-10 px-6 pb-4 flex items-center justify-between"><button class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-card-dark flex items-center justify-center text-zinc-900 dark:text-white"><span class="material-icons">arrow_back</span></button><h2 class="font-display font-bold text-lg dark:text-white">Alert Detail</h2><button class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-card-dark flex items-center justify-center text-zinc-900 dark:text-white"><span class="material-icons">ios_share</span></button></header>
+<div class="w-full bg-severity-critical/20 py-2.5 px-6 flex justify-between items-center"><span class="text-xs font-bold text-severity-critical tracking-widest uppercase">Critical Whale Movement</span><div class="bg-severity-critical text-white text-[10px] font-black px-2 py-0.5 rounded-full">CRITICAL</div></div>
+<main class="flex-1 overflow-y-auto no-scrollbar">
+<div class="p-8 flex flex-col items-center text-center"><div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/20"><span class="material-icons text-primary text-6xl">waves</span></div><h3 class="text-2xl font-bold dark:text-white leading-tight">1,250.45 BTC Transaction</h3><p class="text-zinc-500 font-medium mt-1">Confirmed on Blockchain</p></div>
+<div class="px-6 space-y-3">
+<div class="bg-white dark:bg-card-dark p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800"><span class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Total Amount</span><div class="flex items-baseline gap-2"><span class="text-2xl font-bold dark:text-white">$80,245,120</span><span class="text-sm font-mono text-zinc-500">USD</span></div></div>
+<div class="grid grid-cols-1 gap-3">
+<div class="bg-white dark:bg-card-dark p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex justify-between items-center"><div><span class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">From Address</span><span class="font-mono text-sm dark:text-zinc-300">3P5Q...9XzK</span></div><span class="material-icons text-zinc-400 text-lg">content_copy</span></div>
+<div class="bg-white dark:bg-card-dark p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex justify-between items-center"><div><span class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">To Address</span><span class="font-mono text-sm dark:text-zinc-300">bc1q...m4r9</span></div><span class="material-icons text-zinc-400 text-lg">content_copy</span></div>
+</div>
+<div class="bg-white dark:bg-card-dark p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800"><div class="flex justify-between items-center mb-4"><span class="text-[10px] font-bold text-zinc-500 uppercase">Impact Score</span><span class="text-primary font-black">7.2/10</span></div><div class="w-full h-3 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="w-[72%] h-full bg-primary rounded-full"></div></div><div class="grid grid-cols-3 gap-2 mt-6"><div class="text-center p-2 bg-background-light dark:bg-background-dark rounded-xl border border-zinc-200 dark:border-zinc-800"><span class="text-[8px] font-bold text-zinc-500 uppercase block">Price</span><span class="text-xs font-bold text-severity-critical">-1.4%</span></div><div class="text-center p-2 bg-background-light dark:bg-background-dark rounded-xl border border-zinc-200 dark:border-zinc-800"><span class="text-[8px] font-bold text-zinc-500 uppercase block">Volume</span><span class="text-xs font-bold dark:text-white">+240%</span></div><div class="text-center p-2 bg-background-light dark:bg-background-dark rounded-xl border border-zinc-200 dark:border-zinc-800"><span class="text-[8px] font-bold text-zinc-500 uppercase block">Recovery</span><span class="text-xs font-bold text-severity-low">Fast</span></div></div></div>
+</div>
+<div class="h-10"></div>
+</main>
+<div class="bg-white dark:bg-background-dark border-t border-zinc-200 dark:border-zinc-800 px-6 pt-4 pb-8 flex gap-3"><button class="flex-1 bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2"><span class="material-icons text-lg">settings</span>Set Alert Rule</button><button class="w-16 bg-transparent border-2 border-zinc-300 dark:border-zinc-700 rounded-xl flex items-center justify-center text-zinc-400"><span class="material-icons">bookmark_border</span></button></div>
+</div>
+</body></html>

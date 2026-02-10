@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE DeFi Risk Monitor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#efba0b",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#0B0E11",
+                        "card-dark": "#1E2329",
+                        "border-dark": "#2B3139",
+                        "text-primary": "#EAECEF",
+                        "text-secondary": "#848E9C",
+                        "danger": "#F6465D",
+                        "success": "#0ECB81",
+                        "warning": "#F0B90B",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono-data { font-family: 'JetBrains Mono', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #2B3139; border-radius: 10px; }
+        .blink-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-text-primary min-h-screen flex">
+<aside class="w-64 border-r border-gray-200 dark:border-border-dark flex-shrink-0 flex flex-col bg-background-light dark:bg-background-dark">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons-outlined text-background-dark font-bold">shield</span>
+</div>
+<span class="text-xl font-bold tracking-tight">BLOSAFE</span>
+</div>
+<nav class="flex-1 mt-4">
+<div class="px-4 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">Monitoring</div>
+<a class="flex items-center gap-3 px-6 py-3 text-text-secondary hover:bg-gray-100 dark:hover:bg-card-dark transition-colors" href="#">
+<span class="material-icons-outlined text-sm">dashboard</span>
+<span class="text-sm font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-text-primary bg-gray-100 dark:bg-card-dark border-l-4 border-primary" href="#">
+<span class="material-icons-outlined text-sm text-primary">analytics</span>
+<span class="text-sm font-medium">DeFi Risk</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-text-secondary hover:bg-gray-100 dark:hover:bg-card-dark transition-colors" href="#">
+<span class="material-icons-outlined text-sm">account_balance_wallet</span>
+<span class="text-sm font-medium">Stablecoins</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-text-secondary hover:bg-gray-100 dark:hover:bg-card-dark transition-colors" href="#">
+<span class="material-icons-outlined text-sm">security</span>
+<span class="text-sm font-medium">Audits</span>
+</a>
+<div class="px-4 py-6 mt-4 text-xs font-semibold text-text-secondary uppercase tracking-wider border-t border-border-dark">Tools</div>
+<a class="flex items-center gap-3 px-6 py-3 text-text-secondary hover:bg-gray-100 dark:hover:bg-card-dark transition-colors" href="#">
+<span class="material-icons-outlined text-sm">notifications</span>
+<span class="text-sm font-medium">Alert Config</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-text-secondary hover:bg-gray-100 dark:hover:bg-card-dark transition-colors" href="#">
+<span class="material-icons-outlined text-sm">api</span>
+<span class="text-sm font-medium">API Access</span>
+</a>
+</nav>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="bg-card-dark p-3 rounded-lg border border-border-dark">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] text-text-secondary uppercase">Node Status</span>
+<span class="w-2 h-2 rounded-full bg-success"></span>
+</div>
+<div class="text-[11px] mono-data text-text-primary">Height: 18,442,109</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto custom-scrollbar">
+<header class="h-16 border-b border-gray-200 dark:border-border-dark flex items-center justify-between px-8 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h1 class="text-lg font-semibold">DeFi Risk Monitor</h1>
+<div class="h-4 w-[1px] bg-border-dark"></div>
+<div class="flex items-center gap-2 text-text-secondary text-sm">
+<span class="material-icons-outlined text-xs">schedule</span>
+<span class="mono-data">Updated: 2023-10-27 14:02:45 UTC</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-card-dark hover:bg-border-dark border border-border-dark px-3 py-1.5 rounded flex items-center gap-2 text-sm transition-colors">
+<span class="material-icons-outlined text-sm">file_download</span> Export
+</button>
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-icons-outlined text-primary text-sm">person</span>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-6 max-w-[1440px] mx-auto w-full">
+<div class="bg-card-dark border-l-4 border-warning rounded shadow-lg p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 bg-warning rounded-full blink-dot"></div>
+<div>
+<span class="font-bold text-warning uppercase text-sm tracking-wide">1 Stablecoin Warning Detected</span>
+<p class="text-text-secondary text-xs mt-0.5">USDC is currently trading at a 0.48% deviation from its $1.00 peg.</p>
+</div>
+</div>
+<button class="text-xs bg-warning/10 text-warning px-4 py-2 rounded-md font-medium hover:bg-warning/20 transition-colors uppercase">Investigate Deviation</button>
+</div>
+<section class="bg-card-dark border border-border-dark rounded-lg overflow-hidden">
+<div class="px-6 py-4 border-b border-border-dark flex items-center justify-between bg-background-dark/30">
+<h2 class="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+<span class="material-icons-outlined text-sm text-primary">monetization_on</span>
+Stablecoin Peg Stability</h2>
+<span class="text-[10px] text-text-secondary uppercase">All values in USD</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-text-secondary text-[11px] uppercase tracking-wider border-b border-border-dark">
+<th class="px-6 py-3 font-medium">Symbol</th>
+<th class="px-6 py-3 font-medium">Price</th>
+<th class="px-6 py-3 font-medium">Peg Target</th>
+<th class="px-6 py-3 font-medium">24h Range</th>
+<th class="px-6 py-3 font-medium text-right">Deviation%</th>
+<th class="px-6 py-3 font-medium text-right">Reserve Ratio</th>
+<th class="px-6 py-3 font-medium text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-dark mono-data text-sm">
+<tr class="hover:bg-white/5 transition-colors bg-warning/5">
+<td class="px-6 py-4"><div class="flex items-center gap-2"><img alt="USDC" class="w-5 h-5" data-alt="USDC cryptocurrency icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6pcRcJuU7iHpZq0gkE4vlhgzndbmfiv-bKvVKQ_y6rruOAtlQ_EHpea3fRuKfZrRSRF8obwwYAFRnIh2skKgdZNlkBNdlTpX93E0W7rbOkDlix0nk3TG-PfoiIElZfdy4LYX0Feynxn04laZSpoLB1AhqK_ADbpeS-77AAyj498Q6x6wm0wWbbT85bs-1u3MFuGpYUddk2vN2y_h8o0wCfkNUBwt6-Wb3tAaZaEC6NbpQQMC439KxbxrfWypWba3ljEALsCi6wNwN"/><span class="font-medium text-text-primary">USDC</span></div></td>
+<td class="px-6 py-4 text-warning">$0.9952</td>
+<td class="px-6 py-4 text-text-secondary">$1.0000</td>
+<td class="px-6 py-4"><div class="flex items-center gap-2 w-32"><span class="text-[10px] text-text-secondary">0.994</span><div class="flex-1 h-1.5 bg-border-dark rounded-full overflow-hidden relative"><div class="absolute left-0 top-0 h-full bg-warning" style="width: 15%"></div></div><span class="text-[10px] text-text-secondary">1.001</span></div></td>
+<td class="px-6 py-4 text-right text-warning">-0.48%</td>
+<td class="px-6 py-4 text-right text-text-primary">102.4%</td>
+<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-warning/20 text-warning uppercase">Warning</span></td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4"><div class="flex items-center gap-2"><img alt="USDT" class="w-5 h-5" data-alt="USDT cryptocurrency icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmxm1umoNlsvVQWOcGknjGXjd3rpjvmdfXzsImi6ERPt6WycKvVSyqRLNfIzC3eOC_cysNnT3Z5VXBLRkZ8r3cFL11xNgw-KJZT9TfN9XL6-hQGNjpzUODlcgLeNTfon9hLQAIjNPMBSBe7istqUMD-ScY1c6ErE6_Z3QWIKF7vH_rNKHsLaaV6Ka23ta4KEvoc3liWzpCeKu1lq2bypq54ij7jXzDcqUDgZUvLI4e983DqUyqTHzqD3ULJQlMHLSaaDWqVAE0jZ6j"/><span class="font-medium text-text-primary">USDT</span></div></td>
+<td class="px-6 py-4 text-text-primary">$1.0001</td>
+<td class="px-6 py-4 text-text-secondary">$1.0000</td>
+<td class="px-6 py-4"><div class="flex items-center gap-2 w-32"><span class="text-[10px] text-text-secondary">0.999</span><div class="flex-1 h-1.5 bg-border-dark rounded-full overflow-hidden relative"><div class="absolute left-1/2 top-0 h-full bg-success" style="width: 40%"></div></div><span class="text-[10px] text-text-secondary">1.001</span></div></td>
+<td class="px-6 py-4 text-right text-success">+0.01%</td>
+<td class="px-6 py-4 text-right text-text-primary">104.8%</td>
+<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-success/20 text-success uppercase">Normal</span></td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4"><div class="flex items-center gap-2"><img alt="DAI" class="w-5 h-5" data-alt="DAI cryptocurrency icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjdNkFMP0PWuxGOVHEh7VEKcw0lMhd2XDt_MVR-Pql8Y6_JkeJjl9jSLD-OwyYVgJINHSjV0NnfY6DMcEnC5E2IKIhf5fo0kkc7-NEIEuQ-PJV8qNz7E1THM2XIUX51lAnmrB5JWNuqkDYoB9LWOl9huw0IZLgQ66Yovjgvaxe_bcrwpAX18YwSTW0xzgs8HLhxm7qfR1azxMeW20EoW70jXOZjL-D_tvrD3Kc0YRGvi8Q5Ipzw8udpUqZzIsphdtDxOKLr4ZNN7B4"/><span class="font-medium text-text-primary">DAI</span></div></td>
+<td class="px-6 py-4 text-text-primary">$0.9998</td>
+<td class="px-6 py-4 text-text-secondary">$1.0000</td>
+<td class="px-6 py-4"><div class="flex items-center gap-2 w-32"><span class="text-[10px] text-text-secondary">0.998</span><div class="flex-1 h-1.5 bg-border-dark rounded-full overflow-hidden relative"><div class="absolute left-1/4 top-0 h-full bg-success" style="width: 25%"></div></div><span class="text-[10px] text-text-secondary">1.002</span></div></td>
+<td class="px-6 py-4 text-right text-danger">-0.02%</td>
+<td class="px-6 py-4 text-right text-text-primary">154.1%</td>
+<td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-success/20 text-success uppercase">Normal</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-card-dark border border-border-dark rounded-lg p-5">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3"><div class="w-10 h-10 rounded bg-indigo-500/10 flex items-center justify-center"><span class="material-icons-outlined text-indigo-400">layers</span></div><div><h3 class="font-bold text-text-primary">Aave V3</h3><p class="text-[11px] text-text-secondary uppercase">Liquidity Market</p></div></div>
+<span class="px-2 py-1 rounded text-[10px] font-bold bg-success/20 text-success uppercase border border-success/30">Low Risk</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-4">
+<div class="p-3 bg-background-dark/50 rounded border border-border-dark"><div class="text-[10px] text-text-secondary uppercase mb-1">Total Value Locked</div><div class="mono-data text-lg font-semibold">$5.82B</div></div>
+<div class="p-3 bg-background-dark/50 rounded border border-border-dark"><div class="text-[10px] text-text-secondary uppercase mb-1">Utilization Rate</div><div class="mono-data text-lg font-semibold">64.2%</div></div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px]"><span class="text-text-secondary">Last Audit:</span><span class="text-text-primary font-medium">OpenZeppelin (Sep 2023)</span></div>
+<div class="flex justify-between text-[11px]"><span class="text-text-secondary">Oracle Health:</span><span class="text-success font-medium flex items-center gap-1"><span class="material-icons-outlined text-[10px]">check_circle</span> 14/14 Feeds Active</span></div>
+<div class="pt-2 mt-2 border-t border-border-dark"><p class="text-[11px] text-text-secondary italic">No anomalies detected in the last 72 hours.</p></div>
+</div>
+</div>
+<div class="bg-card-dark border border-warning/30 rounded-lg p-5 bg-gradient-to-br from-card-dark to-warning/5">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-3"><div class="w-10 h-10 rounded bg-blue-500/10 flex items-center justify-center"><span class="material-icons-outlined text-blue-400">opacity</span></div><div><h3 class="font-bold text-text-primary">Lido Finance</h3><p class="text-[11px] text-text-secondary uppercase">Liquid Staking</p></div></div>
+<span class="px-2 py-1 rounded text-[10px] font-bold bg-warning/20 text-warning uppercase border border-warning/30">Medium Risk</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-4">
+<div class="p-3 bg-background-dark/50 rounded border border-border-dark"><div class="text-[10px] text-text-secondary uppercase mb-1">Total Value Locked</div><div class="mono-data text-lg font-semibold">$14.1B</div></div>
+<div class="p-3 bg-background-dark/50 rounded border border-border-dark"><div class="text-[10px] text-text-secondary uppercase mb-1">stETH/ETH Peg</div><div class="mono-data text-lg font-semibold text-warning">0.9882</div></div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px]"><span class="text-text-secondary">Last Audit:</span><span class="text-text-primary font-medium">Sigma Prime (Aug 2023)</span></div>
+<div class="flex justify-between text-[11px]"><span class="text-text-secondary">Anomaly Note:</span><span class="text-warning font-medium flex items-center gap-1"><span class="material-icons-outlined text-[10px]">priority_high</span> Unusual withdrawal pattern</span></div>
+<div class="pt-2 mt-2 border-t border-border-dark"><p class="text-[11px] text-warning/80">Monitor stETH exit queue: 14,200 ETH pending redemption.</p></div>
+</div>
+</div>
+</div>
+<section class="bg-card-dark border border-border-dark rounded-lg overflow-hidden">
+<div class="px-6 py-4 border-b border-border-dark bg-background-dark/30">
+<h2 class="text-sm font-semibold uppercase tracking-wider flex items-center gap-2"><span class="material-icons-outlined text-sm text-primary">history</span>Recent Risk Events</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-text-secondary text-[11px] uppercase tracking-wider border-b border-border-dark">
+<th class="px-6 py-3 font-medium">Timestamp (UTC)</th><th class="px-6 py-3 font-medium">Protocol/Asset</th><th class="px-6 py-3 font-medium">Event Description</th><th class="px-6 py-3 font-medium text-center">Severity</th><th class="px-6 py-3 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-dark mono-data text-xs">
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 13:58:22</td><td class="px-6 py-3 text-text-primary font-medium">USDC/USDT</td><td class="px-6 py-3">Stablecoin peg deviation &gt; 0.45% detected on Curve 3pool</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/20 text-danger uppercase">High</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 13:42:10</td><td class="px-6 py-3 text-text-primary font-medium">Lido</td><td class="px-6 py-3">Unusual withdrawal pattern: 2,500 ETH in single block</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-warning/20 text-warning uppercase">Medium</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 13:15:45</td><td class="px-6 py-3 text-text-primary font-medium">Chainlink</td><td class="px-6 py-3">Oracle update delay for AVAX/USD feed (280s heartbeat)</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 uppercase">Low</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 12:44:02</td><td class="px-6 py-3 text-text-primary font-medium">Compound V2</td><td class="px-6 py-3">Large liquidity shift: 15.2M cUSDC withdrawn from v2</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 uppercase">Low</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 11:20:18</td><td class="px-6 py-3 text-text-primary font-medium">GMX</td><td class="px-6 py-3">PVP balancing: Trader PnL skewing toward 85% long</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-warning/20 text-warning uppercase">Medium</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="px-6 py-3 text-text-secondary">2023-10-27 10:05:45</td><td class="px-6 py-3 text-text-primary font-medium">FRAX</td><td class="px-6 py-3">AMO collateral rebalance completed: 25M USDT allocated</td><td class="px-6 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-success/20 text-success uppercase">Normal</span></td><td class="px-6 py-3 text-right"><button class="text-primary hover:underline text-[10px] font-bold">VIEW TX</button></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE Create Alert: Select Type</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary":"#efba0b","background-dark":"#0B0E11","card-dark":"#1E2329","border-dark":"#2B3139"},fontFamily:{"display":["Inter","sans-serif"]},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"}}}}
+</script>
+<style>body{font-family:Inter,sans-serif}.sidebar-active{border-left:4px solid #efba0b;background:rgba(239,186,11,0.1)}</style>
+</head>
+<body class="bg-background-dark text-slate-100 min-h-screen flex overflow-hidden">
+<aside class="w-[240px] flex-shrink-0 border-r border-border-dark flex flex-col bg-background-dark z-20">
+<div class="p-6 flex items-center gap-3"><div class="w-8 h-8 bg-primary rounded flex items-center justify-center"><span class="material-symbols-outlined text-background-dark font-bold">account_balance_wallet</span></div><h1 class="text-xl font-black tracking-tight text-white">BLOSAFE</h1></div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg text-slate-400 hover:text-white hover:bg-card-dark" href="#"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg text-slate-400 hover:text-white hover:bg-card-dark" href="#"><span class="material-symbols-outlined">show_chart</span>Markets</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-sm sidebar-active text-primary" href="#"><span class="material-symbols-outlined">notifications_active</span>Alerts</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg text-slate-400 hover:text-white hover:bg-card-dark" href="#"><span class="material-symbols-outlined">account_balance</span>Portfolio</a>
+</nav>
+</aside>
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+<header class="h-16 border-b border-border-dark flex items-center justify-between px-8 bg-background-dark z-10">
+<div class="max-w-md w-full"><div class="relative"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span><input class="w-full bg-card-dark border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500" placeholder="Search..." type="text"/></div></div>
+<div class="flex items-center gap-4"><div class="w-9 h-9 rounded-full bg-card-dark border border-border-dark flex items-center justify-center text-primary font-bold text-xs">JD</div></div>
+</header>
+<div class="flex-1 overflow-y-auto bg-background-dark p-8">
+<div class="max-w-5xl mx-auto">
+<div class="mb-10"><div class="flex items-center justify-between relative max-w-2xl mx-auto"><div class="absolute top-1/2 left-0 w-full h-0.5 bg-border-dark -translate-y-1/2 -z-0"></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background-dark font-bold shadow-lg shadow-primary/20"><span class="material-symbols-outlined text-xl">category</span></div><span class="text-xs font-bold text-primary uppercase">1: Type</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-10 h-10 rounded-full bg-card-dark border-2 border-border-dark flex items-center justify-center text-slate-500"><span class="material-symbols-outlined text-xl">tune</span></div><span class="text-xs text-slate-400 uppercase">2: Conditions</span></div><div class="relative z-10 flex flex-col items-center gap-2"><div class="w-10 h-10 rounded-full bg-card-dark border-2 border-border-dark flex items-center justify-center text-slate-500"><span class="material-symbols-outlined text-xl">send</span></div><span class="text-xs text-slate-400 uppercase">3: Delivery</span></div></div></div>
+<div class="mb-8"><h2 class="text-3xl font-black text-white mb-2">Create Alert Rule</h2><p class="text-slate-400 text-lg">Choose the type of alert you want to create</p></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+<div class="group bg-card-dark border-2 border-primary rounded-xl p-6 cursor-pointer shadow-xl relative"><div class="absolute top-3 right-3"><span class="material-symbols-outlined text-primary">check_circle</span></div><div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-5 text-blue-500"><span class="material-symbols-outlined text-3xl">waves</span></div><h3 class="text-lg font-bold text-white mb-2">Whale Movement</h3><p class="text-sm text-slate-400">Monitor large scale exchange and wallet transfers to anticipate significant market volatility.</p></div>
+<div class="group bg-card-dark border border-border-dark rounded-xl p-6 cursor-pointer"><div class="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-5 text-[#F6465D]"><span class="material-symbols-outlined text-3xl">warning</span></div><h3 class="text-lg font-bold text-white mb-2">Risk Alert</h3><p class="text-sm text-slate-400">Detect DeFi vulnerabilities, smart contract exploits, and stablecoin de-pegging events.</p></div>
+<div class="group bg-card-dark border border-border-dark rounded-xl p-6 cursor-pointer"><div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-5 text-[#0ECB81]"><span class="material-symbols-outlined text-3xl">trending_up</span></div><h3 class="text-lg font-bold text-white mb-2">Price Signal</h3><p class="text-sm text-slate-400">Track technical indicators, RSI levels, moving average crossovers, and price breakouts.</p></div>
+<div class="group bg-card-dark border border-border-dark rounded-xl p-6 cursor-pointer"><div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-5 text-primary"><span class="material-symbols-outlined text-3xl">lock_open</span></div><h3 class="text-lg font-bold text-white mb-2">Token Unlock</h3><p class="text-sm text-slate-400">Stay informed about upcoming vesting schedules and massive supply increases.</p></div>
+<div class="group bg-card-dark border border-border-dark rounded-xl p-6 cursor-pointer"><div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-5 text-[#8B5CF6]"><span class="material-symbols-outlined text-3xl">water_drop</span></div><h3 class="text-lg font-bold text-white mb-2">Liquidity</h3><p class="text-sm text-slate-400">Monitor DEX pool changes, liquidity removals, and major additions to pools.</p></div>
+</div>
+</div>
+</div>
+<footer class="h-20 border-t border-border-dark px-8 flex items-center justify-between bg-background-dark/95 z-20">
+<button class="px-6 py-2.5 text-sm text-slate-400 hover:text-white">Cancel</button>
+<button class="bg-primary text-background-dark px-8 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/10">Next: Set Conditions <span class="material-symbols-outlined text-lg">arrow_forward</span></button>
+</footer>
+</main>
+</body></html>

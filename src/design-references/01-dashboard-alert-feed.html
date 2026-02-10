@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE Alert Dashboard Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F0B90B",
+                        "background-dark": "#0B0E11",
+                        "card-dark": "#1E2329",
+                        "border-dark": "#2B3139",
+                        "text-primary": "#EAECEF",
+                        "text-secondary": "#848E9C",
+                        "success": "#0ECB81",
+                        "danger": "#F6465D",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "4px",
+                        "lg": "6px",
+                        "xl": "8px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0B0E11;
+            color: #EAECEF;
+        }
+        /* Custom scrollbar for data-dense feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0E11;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2B3139;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #474D57;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-text-primary font-display antialiased overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-[240px] flex-shrink-0 flex flex-col h-full border-r border-border-dark bg-[#0B0E11]">
+<!-- Logo Area -->
+<div class="h-16 flex items-center px-6 border-b border-border-dark">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-size: 28px;">token</span>
+<h1 class="text-xl font-bold tracking-tight text-white">BLOSAFE</h1>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded bg-card-dark border-l-2 border-primary text-primary group transition-colors" href="#">
+<span class="material-symbols-outlined text-primary">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">notifications</span>
+<span class="text-sm font-medium">Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">visibility</span>
+<span class="text-sm font-medium">Watchlist</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">account_balance_wallet</span>
+<span class="text-sm font-medium">Portfolio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">candlestick_chart</span>
+<span class="text-sm font-medium">Markets</span>
+</a>
+<div class="mt-8 px-3">
+<p class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">System</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-text-secondary hover:bg-card-dark hover:text-text-primary group transition-colors border-l-2 border-transparent" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-primary">api</span>
+<span class="text-sm font-medium">API Keys</span>
+</a>
+</div>
+</nav>
+<!-- User Profile -->
+<div class="p-4 border-t border-border-dark">
+<div class="flex items-center gap-3 p-2 rounded hover:bg-card-dark cursor-pointer transition-colors">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 bg-card-dark border border-border-dark" data-alt="User avatar profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCe1IAH4fajQcm8NYCB2NQn3oYpjtkZft3j9jFe4lBJOKWkRslWQFGXxIa_p4GMdYI61geBhpJOclRBJa81fr9ql0F2_Ws6nyGBwDcec3SHOSoZlTaP2bXimoyJ19YVdSws27LPuuLm6Xc2QuvPIEIQFwD8S6J1kbQJMbu0t3EW2ncL5BqiiarrgQUkNuI9Egy94SwaTcJiA89TQ6h0KL3D-sVppoyjSvse_xP2_SWeksCdhP4nqIQYp69AvOcTa0nudAC0rGNmvnLG');"></div>
+<div class="absolute -bottom-1 -right-1 bg-primary text-background-dark text-[9px] font-bold px-1 py-0.5 rounded-sm border border-background-dark">PRO</div>
+</div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-sm font-medium text-text-primary truncate">Alex Trader</p>
+<p class="text-xs text-text-secondary truncate">alex@blosafe.io</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-background-dark">
+<!-- Top Bar -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-border-dark bg-[#0B0E11] flex-shrink-0 z-20">
+<div class="flex items-center gap-6">
+<h2 class="text-lg font-bold text-text-primary">Dashboard</h2>
+<!-- Search -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-text-secondary group-focus-within:text-primary text-[20px]">search</span>
+</div>
+<input class="block w-64 pl-10 pr-3 py-1.5 border border-border-dark rounded-lg leading-5 bg-card-dark text-text-primary placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all" placeholder="Search tokens, wallets, txs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-text-secondary hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 size-2 bg-danger rounded-full border border-background-dark"></span>
+</button>
+<button class="p-2 text-text-secondary hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-px h-6 bg-border-dark mx-1"></div>
+<div class="flex flex-col items-end">
+<span class="text-xs text-text-secondary">Network Status</span>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-success"></span>
+<span class="text-xs font-mono text-success">OPERATIONAL</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Ticker Tape -->
+<div class="flex items-center border-b border-border-dark bg-[#161a1e] overflow-hidden whitespace-nowrap h-10 flex-shrink-0">
+<div class="flex items-center gap-8 px-6 text-xs font-mono animate-marquee">
+<div class="flex items-center gap-2">
+<span class="text-text-secondary font-semibold">BTC</span>
+<span class="text-text-primary">$42,150.00</span>
+<span class="text-success">+1.2%</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-text-secondary font-semibold">ETH</span>
+<span class="text-text-primary">$2,250.45</span>
+<span class="text-success">+0.8%</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-text-secondary font-semibold">SOL</span>
+<span class="text-text-primary">$98.50</span>
+<span class="text-danger">-2.1%</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-text-secondary font-semibold">BNB</span>
+<span class="text-text-primary">$312.80</span>
+<span class="text-success">+0.5%</span>
+</div>
+<div class="flex items-center gap-2 border-l border-border-dark pl-8">
+<span class="text-text-secondary font-semibold">ETH Gas</span>
+<span class="text-primary">45 gwei</span>
+<span class="text-text-secondary">Normal</span>
+</div>
+</div>
+</div>
+<!-- Dashboard Content Grid -->
+<div class="flex-1 overflow-hidden flex flex-row">
+<!-- Main Alert Feed (65%) -->
+<div class="flex-1 flex flex-col min-w-0 border-r border-border-dark h-full">
+<!-- Filters -->
+<div class="p-4 border-b border-border-dark flex items-center justify-between bg-background-dark sticky top-0 z-10">
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 rounded-full bg-primary text-background-dark text-xs font-bold border border-primary transition-colors">All Alerts</button>
+<button class="px-4 py-1.5 rounded-full bg-transparent text-text-secondary text-xs font-medium border border-border-dark hover:border-text-secondary hover:text-text-primary transition-colors">Critical</button>
+<button class="px-4 py-1.5 rounded-full bg-transparent text-text-secondary text-xs font-medium border border-border-dark hover:border-text-secondary hover:text-text-primary transition-colors">High</button>
+<button class="px-4 py-1.5 rounded-full bg-transparent text-text-secondary text-xs font-medium border border-border-dark hover:border-text-secondary hover:text-text-primary transition-colors">Medium</button>
+<button class="px-4 py-1.5 rounded-full bg-transparent text-text-secondary text-xs font-medium border border-border-dark hover:border-text-secondary hover:text-text-primary transition-colors">Low</button>
+</div>
+<div class="flex items-center gap-2 text-text-secondary text-xs">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span>Sort by: <span class="text-text-primary font-medium">Time (Newest)</span></span>
+</div>
+</div>
+<!-- Feed List -->
+<div class="flex-1 overflow-y-auto p-4 space-y-3 bg-background-dark">
+<!-- Card 1: CRITICAL -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-danger border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-danger/10 text-danger text-[10px] font-bold uppercase tracking-wider border border-danger/20">Critical</span>
+<span class="text-xs text-text-secondary font-mono">ETH • Large Transfer</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">2m ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">15,000 ETH <span class="text-text-secondary">($33.75M)</span> transferred to Binance</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>From: 0x3f...2a9</span>
+<span class="material-symbols-outlined text-[12px]">arrow_right_alt</span>
+<span>To: Binance 14</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Card 2: HIGH -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-orange-500 border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-orange-500/10 text-orange-500 text-[10px] font-bold uppercase tracking-wider border border-orange-500/20">High</span>
+<span class="text-xs text-text-secondary font-mono">USDC • Peg Deviation</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">14m ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">USDC de-pegged by 0.3% on Curve Pool</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>Current Price: $0.9970</span>
+<span class="text-danger">-0.30%</span>
+<span class="text-text-secondary">Vol: $45M</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">ssid_chart</span>
+</button>
+</div>
+</div>
+<!-- Card 3: MEDIUM -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-yellow-400 border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-yellow-400/10 text-yellow-400 text-[10px] font-bold uppercase tracking-wider border border-yellow-400/20">Medium</span>
+<span class="text-xs text-text-secondary font-mono">BTC • Technical</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">45m ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">Bitcoin Golden Cross confirmed on 1D timeframe</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>SMA 50 &gt; SMA 200</span>
+<span class="text-success">Bullish Signal</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">candlestick_chart</span>
+</button>
+</div>
+</div>
+<!-- Card 4: HIGH -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-orange-500 border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-orange-500/10 text-orange-500 text-[10px] font-bold uppercase tracking-wider border border-orange-500/20">High</span>
+<span class="text-xs text-text-secondary font-mono">BTC • Exchange Outflow</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">1h ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">500 BTC <span class="text-text-secondary">($21.1M)</span> withdrawn from Coinbase</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>To Cold Wallet: bc1q...8zw</span>
+<span class="text-success">Accumulation</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Card 5: LOW -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-text-secondary border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-gray-700/30 text-text-secondary text-[10px] font-bold uppercase tracking-wider border border-gray-700/50">Low</span>
+<span class="text-xs text-text-secondary font-mono">ARB • Tokenomics</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">3h ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">Upcoming ARB Token Unlock Event</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>Unlock Date: In 3 days</span>
+<span>Amount: 110M ARB</span>
+<span class="text-text-secondary">($85M)</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+</button>
+</div>
+</div>
+<!-- Card 6: CRITICAL -->
+<div class="flex flex-col gap-2 p-4 bg-card-dark rounded-lg border-l-[3px] border-l-danger border-y border-r border-border-dark hover:border-r-text-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-danger/10 text-danger text-[10px] font-bold uppercase tracking-wider border border-danger/20">Critical</span>
+<span class="text-xs text-text-secondary font-mono">AAVE • Protocol Health</span>
+</div>
+<span class="text-xs text-text-secondary font-mono">1h 12m ago</span>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="text-base font-medium text-text-primary mb-1">Aave Total Value Locked dropped 12% in 1h</h3>
+<div class="flex items-center gap-2 text-xs text-text-secondary font-mono">
+<span>Prev TVL: $6.2B</span>
+<span class="material-symbols-outlined text-[12px]">arrow_right_alt</span>
+<span>Curr TVL: $5.45B</span>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/5 rounded text-text-secondary hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side Panel (35%) -->
+<div class="w-[35%] min-w-[320px] max-w-[480px] flex flex-col h-full bg-[#0E1114]">
+<!-- Trending Tokens Widget -->
+<div class="flex flex-col flex-1 border-b border-border-dark overflow-hidden">
+<div class="px-5 py-4 border-b border-border-dark flex justify-between items-center">
+<h3 class="text-sm font-bold text-text-primary uppercase tracking-wide">Trending Tokens</h3>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-card-dark text-text-secondary text-[10px] uppercase font-semibold">
+<tr>
+<th class="px-5 py-2 font-medium w-1/3">Asset</th>
+<th class="px-2 py-2 font-medium text-right">Price</th>
+<th class="px-5 py-2 font-medium text-right">24h %</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-dark text-sm">
+<tr class="hover:bg-card-dark/50 transition-colors group cursor-pointer">
+<td class="px-5 py-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs" data-alt="Solana gradient icon">S</div>
+<div>
+<p class="font-bold text-text-primary">SOL</p>
+<p class="text-xs text-text-secondary">Solana</p>
+</div>
+</div>
+</td>
+<td class="px-2 py-3 text-right font-mono text-text-primary">$98.50</td>
+<td class="px-5 py-3 text-right">
+<div class="flex flex-col items-end">
+<span class="text-success font-mono font-medium">+5.4%</span>
+<!-- Tiny sparkline simulation -->
+<div class="w-12 h-4 overflow-hidden relative opacity-70">
+<svg class="stroke-success fill-none stroke-2 w-full h-full" viewbox="0 0 50 15">
+<path d="M0,10 L10,12 L20,8 L30,5 L40,8 L50,2"></path>
+</svg>
+</div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-card-dark/50 transition-colors group cursor-pointer">
+<td class="px-5 py-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xs" data-alt="Pepe coin green icon">P</div>
+<div>
+<p class="font-bold text-text-primary">PEPE</p>
+<p class="text-xs text-text-secondary">Pepe</p>
+</div>
+</div>
+</td>
+<td class="px-2 py-3 text-right font-mono text-text-primary">$0.00012</td>
+<td class="px-5 py-3 text-right">
+<div class="flex flex-col items-end">
+<span class="text-danger font-mono font-medium">-12.0%</span>
+<div class="w-12 h-4 overflow-hidden relative opacity-70">
+<svg class="stroke-danger fill-none stroke-2 w-full h-full" viewbox="0 0 50 15">
+<path d="M0,2 L10,5 L20,4 L30,10 L40,8 L50,14"></path>
+</svg>
+</div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-card-dark/50 transition-colors group cursor-pointer">
+<td class="px-5 py-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs" data-alt="Ethereum blue icon">E</div>
+<div>
+<p class="font-bold text-text-primary">ETH</p>
+<p class="text-xs text-text-secondary">Ethereum</p>
+</div>
+</div>
+</td>
+<td class="px-2 py-3 text-right font-mono text-text-primary">$2,250.45</td>
+<td class="px-5 py-3 text-right">
+<div class="flex flex-col items-end">
+<span class="text-success font-mono font-medium">+1.2%</span>
+<div class="w-12 h-4 overflow-hidden relative opacity-70">
+<svg class="stroke-success fill-none stroke-2 w-full h-full" viewbox="0 0 50 15">
+<path d="M0,12 L10,12 L20,10 L30,6 L40,8 L50,4"></path>
+</svg>
+</div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-card-dark/50 transition-colors group cursor-pointer">
+<td class="px-5 py-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs" data-alt="Bitcoin orange icon">B</div>
+<div>
+<p class="font-bold text-text-primary">BTC</p>
+<p class="text-xs text-text-secondary">Bitcoin</p>
+</div>
+</div>
+</td>
+<td class="px-2 py-3 text-right font-mono text-text-primary">$42,150.00</td>
+<td class="px-5 py-3 text-right">
+<div class="flex flex-col items-end">
+<span class="text-success font-mono font-medium">+0.8%</span>
+<div class="w-12 h-4 overflow-hidden relative opacity-70">
+<svg class="stroke-success fill-none stroke-2 w-full h-full" viewbox="0 0 50 15">
+<path d="M0,8 L15,10 L25,5 L35,6 L50,2"></path>
+</svg>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Whale Movements Chart Widget -->
+<div class="h-[40%] flex flex-col bg-card-dark/30 p-5">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-sm font-bold text-text-primary uppercase tracking-wide">Whale Movements (24h)</h3>
+<span class="text-[10px] px-2 py-1 rounded bg-card-dark border border-border-dark text-text-secondary">USD Value</span>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-3 relative">
+<!-- Chart Bars -->
+<div class="flex justify-between items-end h-full px-2 gap-4">
+<!-- Binance -->
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full flex gap-1 items-end h-[120px] justify-center">
+<div class="w-3 bg-success rounded-t-sm h-[60%] relative group-hover:brightness-110 transition-all"></div>
+<div class="w-3 bg-danger rounded-t-sm h-[40%] relative group-hover:brightness-110 transition-all"></div>
+</div>
+<span class="text-[10px] text-text-secondary mt-2 font-medium">Binance</span>
+</div>
+<!-- Coinbase -->
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full flex gap-1 items-end h-[120px] justify-center">
+<div class="w-3 bg-success rounded-t-sm h-[30%] relative group-hover:brightness-110 transition-all"></div>
+<div class="w-3 bg-danger rounded-t-sm h-[80%] relative group-hover:brightness-110 transition-all"></div>
+</div>
+<span class="text-[10px] text-text-secondary mt-2 font-medium">Coinbase</span>
+</div>
+<!-- OKX -->
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full flex gap-1 items-end h-[120px] justify-center">
+<div class="w-3 bg-success rounded-t-sm h-[50%] relative group-hover:brightness-110 transition-all"></div>
+<div class="w-3 bg-danger rounded-t-sm h-[25%] relative group-hover:brightness-110 transition-all"></div>
+</div>
+<span class="text-[10px] text-text-secondary mt-2 font-medium">OKX</span>
+</div>
+<!-- Kraken -->
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full flex gap-1 items-end h-[120px] justify-center">
+<div class="w-3 bg-success rounded-t-sm h-[40%] relative group-hover:brightness-110 transition-all"></div>
+<div class="w-3 bg-danger rounded-t-sm h-[45%] relative group-hover:brightness-110 transition-all"></div>
+</div>
+<span class="text-[10px] text-text-secondary mt-2 font-medium">Kraken</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex justify-center gap-4 mt-2 border-t border-border-dark pt-3">
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-success"></span>
+<span class="text-[10px] text-text-secondary uppercase">Inflow</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-danger"></span>
+<span class="text-[10px] text-text-secondary uppercase">Outflow</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<style>
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
+</body></html>

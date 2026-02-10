@@ -1,0 +1,28 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fetch-prices",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/check-stablecoins",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/update-defi-health",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/fetch-token-unlocks",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/email-digest",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/signal-generator",
+      "schedule": "0 */4 * * *"
+    }
+  ]
+}

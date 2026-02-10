@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOSAFE Alert Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#efba0b",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221e10",
+                        "bs-bg": "#0B0E11",
+                        "bs-card": "#1E2329",
+                        "bs-border": "#2B3139",
+                        "bs-text-muted": "#848E9C",
+                        "bs-critical": "#F6465D",
+                        "bs-success": "#0ECB81",
+                        "bs-warning": "#F0B90B",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0B0E11; }
+        ::-webkit-scrollbar-thumb { background: #2B3139; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #848E9C; }
+    </style>
+</head>
+<body class="bg-[#0B0E11] text-white font-display overflow-x-hidden antialiased selection:bg-primary/30 selection:text-primary">
+<div class="flex min-h-screen w-full">
+<aside class="w-[240px] flex-shrink-0 border-r border-bs-border bg-[#0B0E11] flex flex-col fixed h-full z-10">
+<div class="h-16 flex items-center px-6 border-b border-bs-border">
+<div class="flex items-center gap-3">
+<div class="bg-gradient-to-br from-primary to-orange-500 rounded-lg size-8 flex items-center justify-center text-black font-bold text-lg">B</div>
+<h1 class="text-white text-lg font-bold tracking-wide">BLOSAFE</h1>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-6 flex flex-col gap-2 px-3">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-bs-text-muted hover:bg-bs-card hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-bs-card text-white border-l-2 border-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary">notifications</span>
+<span class="text-sm font-medium">Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-bs-text-muted hover:bg-bs-card hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">account_balance_wallet</span>
+<span class="text-sm font-medium">Wallets</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-bs-text-muted hover:bg-bs-card hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">candlestick_chart</span>
+<span class="text-sm font-medium">Market</span>
+</a>
+<div class="my-2 border-t border-bs-border mx-4"></div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-bs-text-muted hover:bg-bs-card hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-bs-border">
+<div class="flex items-center gap-3 px-2 py-2">
+<div class="size-8 rounded-full bg-bs-card border border-bs-border flex items-center justify-center text-xs text-bs-text-muted">Op</div>
+<div class="flex flex-col">
+<span class="text-sm text-white font-medium">Operator_01</span>
+<span class="text-xs text-bs-text-muted">Admin View</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 ml-[240px] flex flex-col min-w-0">
+<div class="h-16 flex items-center justify-between px-8 border-b border-bs-border bg-[#0B0E11]/95 backdrop-blur sticky top-0 z-20">
+<div class="flex items-center gap-2 text-sm">
+<a class="text-bs-text-muted hover:text-primary transition-colors" href="#">Dashboard</a>
+<span class="text-bs-text-muted">/</span>
+<a class="text-bs-text-muted hover:text-primary transition-colors" href="#">Alerts</a>
+<span class="text-bs-text-muted">/</span>
+<span class="text-white font-medium">Alert Detail</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 text-bs-text-muted hover:text-white transition-colors text-sm">
+<span class="material-symbols-outlined text-[18px]">share</span>Share</button>
+<button class="flex items-center gap-2 text-bs-text-muted hover:text-white transition-colors text-sm">
+<span class="material-symbols-outlined text-[18px]">bookmark_border</span>Bookmark</button>
+</div>
+</div>
+<div class="p-8 max-w-[1440px] mx-auto w-full flex flex-col gap-6">
+<div class="bg-bs-card border border-bs-border rounded-lg p-6 flex flex-col md:flex-row items-start justify-between gap-6 shadow-sm">
+<div class="flex items-start gap-5">
+<div class="size-16 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+<span class="material-symbols-outlined text-blue-400 text-[32px]">phishing</span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<span class="bg-bs-critical/15 text-bs-critical text-xs font-bold px-2 py-0.5 rounded border border-bs-critical/20 tracking-wide">CRITICAL</span>
+<span class="text-bs-text-muted text-xs font-mono">ID: #ALT-8923-XJ</span>
+<span class="text-bs-text-muted text-xs">2 mins ago</span>
+</div>
+<h1 class="text-2xl font-bold text-white leading-tight">15,000 ETH <span class="text-bs-text-muted font-normal">($52.8M)</span> transferred to Binance</h1>
+<p class="text-bs-text-muted text-sm max-w-2xl">Large movement of funds detected from a known Whale wallet to an Exchange Hot Wallet. High potential for market volatility.</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<button class="bg-primary hover:bg-primary/90 text-black font-semibold text-sm px-4 py-2 rounded transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">visibility</span>Track Wallet</button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+<div class="bg-bs-card border border-bs-border rounded-lg p-0 overflow-hidden">
+<div class="px-6 py-4 border-b border-bs-border flex items-center justify-between bg-bs-card/50">
+<h3 class="text-white font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-bs-text-muted text-[18px]">swap_horiz</span>Transaction Flow</h3>
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-xs text-bs-success">Confirmed</span>
+</div>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+<div class="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center size-10 rounded-full bg-bs-border border border-[#363c45] z-10">
+<span class="material-symbols-outlined text-bs-text-muted">arrow_forward</span>
+</div>
+<div class="flex flex-col gap-4 bg-[#0B0E11]/50 p-4 rounded-lg border border-bs-border/50">
+<div class="flex items-center justify-between">
+<span class="text-xs text-bs-text-muted uppercase tracking-wider font-semibold">From</span>
+<span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-0.5 rounded border border-purple-500/20">Whale #2847</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-10 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
+<span class="material-symbols-outlined text-purple-300 text-[20px]">account_balance_wallet</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 group cursor-pointer">
+<span class="text-white font-mono text-sm group-hover:text-primary transition-colors">0x7a25...3f2d</span>
+<span class="material-symbols-outlined text-bs-text-muted text-[14px] opacity-0 group-hover:opacity-100 transition-opacity">content_copy</span>
+</div>
+<span class="text-xs text-bs-text-muted">Balance: 42,109 ETH</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 bg-[#0B0E11]/50 p-4 rounded-lg border border-bs-border/50">
+<div class="flex items-center justify-between">
+<span class="text-xs text-bs-text-muted uppercase tracking-wider font-semibold">To</span>
+<span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-0.5 rounded border border-yellow-500/20">Binance Hot Wallet</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-10 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center border border-white/5">
+<span class="material-symbols-outlined text-yellow-300 text-[20px]">currency_exchange</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 group cursor-pointer">
+<span class="text-white font-mono text-sm group-hover:text-primary transition-colors">0x28C6...9e12</span>
+<span class="material-symbols-outlined text-bs-text-muted text-[14px] opacity-0 group-hover:opacity-100 transition-opacity">content_copy</span>
+</div>
+<span class="text-xs text-bs-text-muted">Entity: Binance Exchange</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-bs-border border-t border-bs-border">
+<div class="bg-bs-card p-4 flex flex-col gap-1">
+<span class="text-xs text-bs-text-muted">Value</span>
+<span class="text-white font-mono text-sm font-medium">15,000 ETH</span>
+</div>
+<div class="bg-bs-card p-4 flex flex-col gap-1">
+<span class="text-xs text-bs-text-muted">Transaction Hash</span>
+<a class="text-blue-400 hover:text-blue-300 font-mono text-sm truncate underline decoration-blue-400/30 underline-offset-2" href="#">0x3a1b...9c4d</a>
+</div>
+<div class="bg-bs-card p-4 flex flex-col gap-1">
+<span class="text-xs text-bs-text-muted">Block Height</span>
+<span class="text-white font-mono text-sm">18239452</span>
+</div>
+<div class="bg-bs-card p-4 flex flex-col gap-1">
+<span class="text-xs text-bs-text-muted">Gas Used</span>
+<span class="text-white font-mono text-sm">0.0042 ETH</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-bs-card border border-bs-border rounded-lg p-5 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-white font-medium text-sm">Recent Wallet History</h3>
+<a class="text-xs text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead><tr class="text-xs text-bs-text-muted border-b border-bs-border">
+<th class="py-2 font-medium">Type</th><th class="py-2 font-medium">Age</th><th class="py-2 font-medium text-right">Value</th>
+</tr></thead>
+<tbody class="text-sm">
+<tr class="border-b border-bs-border/50 hover:bg-white/5 transition-colors"><td class="py-3 text-bs-critical">OUT</td><td class="py-3 text-bs-text-muted">2m</td><td class="py-3 text-right font-mono">15,000 ETH</td></tr>
+<tr class="border-b border-bs-border/50 hover:bg-white/5 transition-colors"><td class="py-3 text-bs-success">IN</td><td class="py-3 text-bs-text-muted">4h</td><td class="py-3 text-right font-mono">2,500 ETH</td></tr>
+<tr class="border-b border-bs-border/50 hover:bg-white/5 transition-colors"><td class="py-3 text-bs-success">IN</td><td class="py-3 text-bs-text-muted">1d</td><td class="py-3 text-right font-mono">450 ETH</td></tr>
+<tr class="hover:bg-white/5 transition-colors"><td class="py-3 text-bs-critical">OUT</td><td class="py-3 text-bs-text-muted">3d</td><td class="py-3 text-right font-mono">1,200 ETH</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-bs-card border border-bs-border rounded-lg p-5 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-white font-medium text-sm">30-Day Activity</h3>
+<div class="flex gap-2"><span class="text-xs text-bs-text-muted bg-[#0B0E11] px-2 py-1 rounded">Vol</span></div>
+</div>
+<div class="flex-1 flex items-end justify-center min-h-[140px] relative">
+<div class="w-full h-full absolute inset-0 flex items-end justify-between px-2 gap-1">
+<div class="w-full bg-bs-success/20 h-[20%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[35%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[15%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[50%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[40%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[60%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[30%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[25%] rounded-t-sm"></div>
+<div class="w-full bg-bs-critical/40 h-[90%] rounded-t-sm"></div>
+<div class="w-full bg-bs-success/20 h-[10%] rounded-t-sm"></div>
+</div>
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<polyline fill="none" points="0,120 40,100 80,110 120,80 160,90 200,60 240,100 280,105 320,20 360,110" stroke="#0ECB81" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+</svg>
+</div>
+<div class="flex justify-between text-xs text-bs-text-muted mt-2"><span>Aug 1</span><span>Aug 15</span><span>Aug 30</span></div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-bs-card border border-bs-border rounded-lg p-6">
+<h3 class="text-white font-medium mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-bs-warning text-[20px]">warning</span>Impact Analysis</h3>
+<div class="flex flex-col items-center justify-center mb-8 relative">
+<div class="relative size-40">
+<svg class="size-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-bs-border" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary drop-shadow-[0_0_10px_rgba(239,186,11,0.3)]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="72, 100" stroke-width="3"></path>
+</svg>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+<span class="text-3xl font-bold text-white block">7.2</span>
+<span class="text-xs text-bs-text-muted uppercase tracking-widest">Score</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-[#0B0E11] border border-bs-border rounded p-3 flex items-center justify-between">
+<div class="flex flex-col"><span class="text-xs text-bs-text-muted">4h Price Impact</span><span class="text-sm font-mono text-bs-critical font-medium">-2.1%</span></div>
+<span class="material-symbols-outlined text-bs-critical text-[20px]">trending_down</span>
+</div>
+<div class="bg-[#0B0E11] border border-bs-border rounded p-3 flex items-center justify-between">
+<div class="flex flex-col"><span class="text-xs text-bs-text-muted">24h Volume Impact</span><span class="text-sm font-mono text-bs-success font-medium">+$340M</span></div>
+<span class="material-symbols-outlined text-bs-success text-[20px]">bar_chart</span>
+</div>
+<div class="bg-[#0B0E11] border border-bs-border rounded p-3 flex items-center justify-between">
+<div class="flex flex-col"><span class="text-xs text-bs-text-muted">Recovery Likelihood</span><span class="text-sm font-mono text-bs-warning font-medium">Medium</span></div>
+<span class="material-symbols-outlined text-bs-warning text-[20px]">remove_circle_outline</span>
+</div>
+</div>
+</div>
+<div class="bg-bs-card border border-bs-border rounded-lg p-6 flex flex-col gap-4">
+<h3 class="text-white font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-purple-400 text-[20px]">psychology</span>Similar Wallets</h3>
+<p class="text-xs text-bs-text-muted">AI identified 3 other wallets with correlated movement patterns in the last 24 hours.</p>
+<div class="flex flex-col gap-2">
+<a class="flex items-center justify-between p-3 rounded hover:bg-[#0B0E11] border border-transparent hover:border-bs-border transition-all group" href="#">
+<div class="flex items-center gap-3"><div class="size-2 rounded-full bg-bs-text-muted group-hover:bg-primary transition-colors"></div><span class="text-sm font-mono text-bs-text-muted group-hover:text-white transition-colors">0x8b...21a4</span></div>
+<span class="text-xs text-bs-text-muted">Whale #102</span>
+</a>
+<a class="flex items-center justify-between p-3 rounded hover:bg-[#0B0E11] border border-transparent hover:border-bs-border transition-all group" href="#">
+<div class="flex items-center gap-3"><div class="size-2 rounded-full bg-bs-text-muted group-hover:bg-primary transition-colors"></div><span class="text-sm font-mono text-bs-text-muted group-hover:text-white transition-colors">0x4c...9f88</span></div>
+<span class="text-xs text-bs-text-muted">Fund_Cold</span>
+</a>
+<a class="flex items-center justify-between p-3 rounded hover:bg-[#0B0E11] border border-transparent hover:border-bs-border transition-all group" href="#">
+<div class="flex items-center gap-3"><div class="size-2 rounded-full bg-bs-text-muted group-hover:bg-primary transition-colors"></div><span class="text-sm font-mono text-bs-text-muted group-hover:text-white transition-colors">0x1a...5d22</span></div>
+<span class="text-xs text-bs-text-muted">Unknown</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 pt-4">
+<h3 class="text-white font-medium text-lg px-1">Related Alerts</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-bs-card border border-bs-border border-l-4 border-l-bs-critical rounded rouded-l-none p-4 hover:bg-[#252b33] transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-bs-text-muted">10 mins ago</span><span class="material-symbols-outlined text-bs-text-muted group-hover:text-white text-[16px]">open_in_new</span></div>
+<h4 class="text-white text-sm font-medium mb-1">Large Transfer to Coinbase</h4>
+<p class="text-xs text-bs-text-muted font-mono">5,000 ETH ($17.6M)</p>
+</div>
+<div class="bg-bs-card border border-bs-border border-l-4 border-l-bs-warning rounded rouded-l-none p-4 hover:bg-[#252b33] transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-bs-text-muted">45 mins ago</span><span class="material-symbols-outlined text-bs-text-muted group-hover:text-white text-[16px]">open_in_new</span></div>
+<h4 class="text-white text-sm font-medium mb-1">Dormant Whale Activated</h4>
+<p class="text-xs text-bs-text-muted font-mono">Wallet active after 3y</p>
+</div>
+<div class="bg-bs-card border border-bs-border border-l-4 border-l-bs-success rounded rouded-l-none p-4 hover:bg-[#252b33] transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-bs-text-muted">2 hours ago</span><span class="material-symbols-outlined text-bs-text-muted group-hover:text-white text-[16px]">open_in_new</span></div>
+<h4 class="text-white text-sm font-medium mb-1">Significant Inflow</h4>
+<p class="text-xs text-bs-text-muted font-mono">20,000 ETH to Cold Storage</p>
+</div>
+<div class="bg-bs-card border border-bs-border border-l-4 border-l-bs-border rounded rouded-l-none p-4 hover:bg-[#252b33] transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2"><span class="text-xs text-bs-text-muted">5 hours ago</span><span class="material-symbols-outlined text-bs-text-muted group-hover:text-white text-[16px]">open_in_new</span></div>
+<h4 class="text-white text-sm font-medium mb-1">Contract Deployment</h4>
+<p class="text-xs text-bs-text-muted font-mono">New Token on Mainnet</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
