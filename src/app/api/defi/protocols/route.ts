@@ -1,28 +1,29 @@
 /**
  * GET /api/defi/protocols
+ *
+ * Returns DeFi protocol TVL data. Publicly accessible.
  */
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { data, error } = await supabase
+      .from("defi_protocols")
+      .select("*")
+      .order("tvl", { ascending: false });
+
+    if (error) throw error;
+
+    return NextResponse.json({ protocols: data ?? [] });
+  } catch (err) {
+    console.error("[api/defi/protocols] Error:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch protocols" },
+      { status: 500 }
+    );
   }
-
-  const { data, error } = await supabase
-    .from("defi_protocol_health")
-    .select("*")
-    .order("tvl_usd", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ protocols: data ?? [] });
 }

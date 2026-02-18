@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   Waves,
   AlertTriangle,
@@ -56,7 +57,7 @@ export interface AlertCardProps {
   onClick?: (id: string) => void;
 }
 
-export function AlertCard({
+export const AlertCard = memo(function AlertCard({
   id,
   type,
   severity,
@@ -147,4 +148,4 @@ export function AlertCard({
       </div>
     </div>
   );
-}
+});

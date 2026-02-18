@@ -22,9 +22,30 @@ export async function PATCH(
 
   const body = (await request.json()) as Record<string, unknown>;
 
+  // Whitelist allowed fields to prevent user_id / id tampering
+  const allowed = new Set([
+    "name",
+    "type",
+    "conditions",
+    "delivery_channels",
+    "is_active",
+    "cooldown_minutes",
+  ]);
+
+  const updates: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (allowed.has(key)) {
+      updates[key] = value;
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from("alert_rules")
-    .update(body)
+    .update(updates)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

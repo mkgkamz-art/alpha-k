@@ -20,6 +20,7 @@ export const unlockKeys = {
 export function useUnlocks(range = "30d") {
   const query = useQuery<UnlocksResponse>({
     queryKey: unlockKeys.list(range),
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const res = await fetch(`/api/unlocks?range=${range}`);
       if (!res.ok) throw new Error("Failed to fetch unlocks");

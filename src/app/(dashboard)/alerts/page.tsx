@@ -3,14 +3,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { useAlerts } from "@/hooks/use-alerts";
 import { AlertCard } from "@/components/alerts/alert-card";
 import { AlertFilter } from "@/components/alerts/alert-filter";
 import { SeverityFilter } from "@/components/alerts/severity-filter";
 import { TrendingPanel } from "@/components/alerts/trending-panel";
 import { WhalePanel } from "@/components/alerts/whale-panel";
-import { timeAgo } from "@/lib/utils";
 import type { AlertType, Severity } from "@/types";
 
 export default function AlertsPage() {

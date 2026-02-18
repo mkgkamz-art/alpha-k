@@ -12,6 +12,7 @@ export function useSettings() {
 
   const query = useQuery<{ settings: User }>({
     queryKey: settingsKeys.all,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const res = await fetch("/api/settings");
       if (!res.ok) throw new Error("Failed to fetch settings");

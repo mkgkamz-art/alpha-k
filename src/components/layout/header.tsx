@@ -24,7 +24,7 @@ const routeMeta: Record<string, { title: string; breadcrumb?: { label: string; h
   "/watchlist": { title: "My Watchlist" },
   "/signals": { title: "Trading Signals" },
   "/unlocks": { title: "Token Unlocks" },
-  "/defi-risk": { title: "DeFi Risk Monitor" },
+  "/risk": { title: "DeFi Risk Monitor" },
   "/settings": { title: "Settings" },
   "/more": { title: "More" },
 };
@@ -40,7 +40,7 @@ interface HeaderProps {
 
 export function Header({ unreadCount = 3, connected = true }: HeaderProps) {
   const pathname = usePathname();
-  const { openMobile } = useSidebarStore();
+  const openMobile = useSidebarStore((s) => s.openMobile);
   const meta = getRouteMeta(pathname);
 
   return (

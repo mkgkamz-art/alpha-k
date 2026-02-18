@@ -1,0 +1,162 @@
+[
+  {
+    "token": "ARB",
+    "name": "Arbitrum",
+    "coingecko_id": "arbitrum",
+    "unlock_date": "2026-02-16T00:00:00Z",
+    "amount": 92650000,
+    "category": "investor"
+  },
+  {
+    "token": "OP",
+    "name": "Optimism",
+    "coingecko_id": "optimism",
+    "unlock_date": "2026-02-17T00:00:00Z",
+    "amount": 31340000,
+    "category": "team"
+  },
+  {
+    "token": "APT",
+    "name": "Aptos",
+    "coingecko_id": "aptos",
+    "unlock_date": "2026-02-20T00:00:00Z",
+    "amount": 11310000,
+    "category": "investor"
+  },
+  {
+    "token": "SUI",
+    "name": "Sui",
+    "coingecko_id": "sui",
+    "unlock_date": "2026-02-22T00:00:00Z",
+    "amount": 64190000,
+    "category": "investor"
+  },
+  {
+    "token": "SEI",
+    "name": "Sei",
+    "coingecko_id": "sei-network",
+    "unlock_date": "2026-02-25T00:00:00Z",
+    "amount": 55000000,
+    "category": "ecosystem"
+  },
+  {
+    "token": "TIA",
+    "name": "Celestia",
+    "coingecko_id": "celestia",
+    "unlock_date": "2026-02-28T00:00:00Z",
+    "amount": 17580000,
+    "category": "investor"
+  },
+  {
+    "token": "STRK",
+    "name": "Starknet",
+    "coingecko_id": "starknet",
+    "unlock_date": "2026-03-01T00:00:00Z",
+    "amount": 64000000,
+    "category": "team"
+  },
+  {
+    "token": "JTO",
+    "name": "Jito",
+    "coingecko_id": "jito-governance-token",
+    "unlock_date": "2026-03-03T00:00:00Z",
+    "amount": 11840000,
+    "category": "investor"
+  },
+  {
+    "token": "PYTH",
+    "name": "Pyth Network",
+    "coingecko_id": "pyth-network",
+    "unlock_date": "2026-03-05T00:00:00Z",
+    "amount": 141200000,
+    "category": "ecosystem"
+  },
+  {
+    "token": "WLD",
+    "name": "Worldcoin",
+    "coingecko_id": "worldcoin-wld",
+    "unlock_date": "2026-03-07T00:00:00Z",
+    "amount": 53330000,
+    "category": "team"
+  },
+  {
+    "token": "DYDX",
+    "name": "dYdX",
+    "coingecko_id": "dydx-chain",
+    "unlock_date": "2026-03-10T00:00:00Z",
+    "amount": 33330000,
+    "category": "investor"
+  },
+  {
+    "token": "JUP",
+    "name": "Jupiter",
+    "coingecko_id": "jupiter-exchange-solana",
+    "unlock_date": "2026-03-12T00:00:00Z",
+    "amount": 135000000,
+    "category": "ecosystem"
+  },
+  {
+    "token": "IMX",
+    "name": "Immutable",
+    "coingecko_id": "immutable-x",
+    "unlock_date": "2026-03-15T00:00:00Z",
+    "amount": 32470000,
+    "category": "ecosystem"
+  },
+  {
+    "token": "ONDO",
+    "name": "Ondo Finance",
+    "coingecko_id": "ondo-finance",
+    "unlock_date": "2026-03-18T00:00:00Z",
+    "amount": 19490000,
+    "category": "investor"
+  },
+  {
+    "token": "W",
+    "name": "Wormhole",
+    "coingecko_id": "wormhole",
+    "unlock_date": "2026-03-20T00:00:00Z",
+    "amount": 600000000,
+    "category": "team"
+  },
+  {
+    "token": "ZRO",
+    "name": "LayerZero",
+    "coingecko_id": "layerzero",
+    "unlock_date": "2026-03-22T00:00:00Z",
+    "amount": 25000000,
+    "category": "investor"
+  },
+  {
+    "token": "EIGEN",
+    "name": "EigenLayer",
+    "coingecko_id": "eigenlayer",
+    "unlock_date": "2026-03-25T00:00:00Z",
+    "amount": 11200000,
+    "category": "investor"
+  },
+  {
+    "token": "AXL",
+    "name": "Axelar",
+    "coingecko_id": "axelar",
+    "unlock_date": "2026-03-28T00:00:00Z",
+    "amount": 21140000,
+    "category": "team"
+  },
+  {
+    "token": "MANTA",
+    "name": "Manta Network",
+    "coingecko_id": "manta-network",
+    "unlock_date": "2026-03-30T00:00:00Z",
+    "amount": 18750000,
+    "category": "ecosystem"
+  },
+  {
+    "token": "BLAST",
+    "name": "Blast",
+    "coingecko_id": "blast",
+    "unlock_date": "2026-02-26T00:00:00Z",
+    "amount": 316700000,
+    "category": "public"
+  }
+]

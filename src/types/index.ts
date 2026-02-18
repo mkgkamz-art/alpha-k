@@ -114,15 +114,14 @@ export interface TokenUnlock {
   token_symbol: string;
   token_name: string;
   unlock_date: string;
-  unlock_amount: number;
-  unlock_value_usd: number;
-  pct_of_circulating: number;
-  unlock_type: UnlockType;
-  vesting_info: string | null;
+  amount: number;
+  usd_value_estimate: number;
+  percent_of_supply: number;
+  category: UnlockType;
   impact_score: number;
-  source_url: string | null;
+  is_notified_3d: boolean;
+  is_notified_1d: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export interface DefiProtocolHealth {
@@ -149,4 +148,20 @@ export interface StablecoinPeg {
   reserve_ratio: number | null;
   status: StablecoinStatus;
   updated_at: string;
+}
+
+export type SignalCategory = "buy" | "sell" | "alert";
+
+export interface Signal {
+  id: string;
+  token_symbol: string;
+  token_name: string;
+  signal_type: SignalCategory;
+  signal_name: string;
+  confidence: number;
+  timeframe: string;
+  description: string;
+  indicators: Record<string, unknown>;
+  price_at_signal: number;
+  created_at: string;
 }

@@ -38,3 +38,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# screenshots & test artifacts
+*.png
+/playwright-report/
+/test-results/
+/e2e/
+
+# misc build artifacts
+build_output.txt
+nul

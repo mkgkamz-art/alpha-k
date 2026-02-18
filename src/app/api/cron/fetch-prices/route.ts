@@ -1,64 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchMarketPrices } from "@/lib/blockchain/price-fetcher";
+import { verifyCronSecret, cronUnauthorized } from "@/lib/cron-auth";
 
 /**
  * Cron: Fetch token prices (every 1 minute)
  *
- * Fetches prices for all tokens in watchlists from CoinGecko,
- * and stores the latest price for price_signal alert evaluation.
+ * Fetches top 100 market tokens from CoinGecko,
+ * upserts into token_prices, and appends top 20 to price_history.
  */
-
-const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
-
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyCronSecret(req)) return cronUnauthorized();
 
   const started = Date.now();
 
   try {
     const supabase = createAdminClient();
 
-    // Get distinct token symbols from watchlists
-    const { data: watchlistTokens } = await supabase
-      .from("watchlist_items")
-      .select("token_symbol")
-      .limit(100);
+    // Fetch top 100 tokens from CoinGecko
+    const prices = await fetchMarketPrices(100);
 
-    if (!watchlistTokens?.length) {
-      return NextResponse.json({ message: "No tokens to track", duration: Date.now() - started });
+    if (prices.length === 0) {
+      return NextResponse.json({
+        message: "No prices returned from CoinGecko",
+        duration: Date.now() - started,
+      });
     }
 
-    const symbols = [...new Set(watchlistTokens.map((t) => t.token_symbol.toLowerCase()))];
-    const symbolsParam = symbols.join(",");
+    // Upsert into token_prices (latest snapshot per token)
+    const { error: upsertError } = await supabase
+      .from("token_prices")
+      .upsert(
+        prices.map((p) => ({
+          token_id: p.token_id,
+          symbol: p.symbol,
+          name: p.name,
+          current_price: p.current_price,
+          market_cap: p.market_cap,
+          total_volume: p.total_volume,
+          price_change_1h: p.price_change_1h,
+          price_change_24h: p.price_change_24h,
+          price_change_7d: p.price_change_7d,
+          last_updated: p.last_updated,
+        })),
+        { onConflict: "token_id" }
+      );
 
-    // Fetch prices from CoinGecko
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (apiKey) headers["x-cg-demo-api-key"] = apiKey;
+    if (upsertError) {
+      console.error("[cron/fetch-prices] Upsert error:", upsertError);
+      throw upsertError;
+    }
 
-    const res = await fetch(
-      `${COINGECKO_BASE}/simple/price?ids=${symbolsParam}&vs_currencies=usd&include_24hr_change=true`,
-      { headers, signal: AbortSignal.timeout(10_000) }
+    // Append top 20 tokens to price_history (time series for charts)
+    const top20 = prices.slice(0, 20);
+    const now = new Date().toISOString();
+
+    const { error: historyError } = await supabase
+      .from("price_history")
+      .insert(
+        top20.map((p) => ({
+          token_id: p.token_id,
+          price: p.current_price,
+          recorded_at: now,
+        }))
+      );
+
+    if (historyError) {
+      console.error("[cron/fetch-prices] History insert error:", historyError);
+    }
+
+    console.log(
+      `[cron/fetch-prices] Upserted ${prices.length} prices, ` +
+        `${top20.length} history rows in ${Date.now() - started}ms`
     );
-
-    if (!res.ok) {
-      throw new Error(`CoinGecko ${res.status}`);
-    }
-
-    const prices = (await res.json()) as Record<
-      string,
-      { usd?: number; usd_24h_change?: number }
-    >;
-
-    const priceCount = Object.keys(prices).length;
-
-    console.log(`[cron/fetch-prices] Fetched ${priceCount} prices in ${Date.now() - started}ms`);
 
     return NextResponse.json({
       success: true,
-      priceCount,
+      priceCount: prices.length,
+      historyCount: top20.length,
       duration: Date.now() - started,
     });
   } catch (err) {
@@ -68,11 +87,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const authHeader = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return authHeader === `Bearer ${secret}`;
 }

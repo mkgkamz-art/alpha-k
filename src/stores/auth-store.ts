@@ -14,6 +14,14 @@ interface AuthStore {
   user: AuthUser | null;
   /** Loading state during auth check */
   loading: boolean;
+
+  /** Current tier: 'free' | 'pro' | 'whale' | null (unauthenticated) */
+  tier: SubscriptionTier | null;
+  /** true if Pro or Whale */
+  isPro: boolean;
+  /** true if Whale only */
+  isWhale: boolean;
+
   /** Set user on login / session restore */
   setUser: (user: AuthUser | null) => void;
   /** Update subscription tier (after purchase / downgrade) */
@@ -24,14 +32,24 @@ interface AuthStore {
   setLoading: (loading: boolean) => void;
 }
 
+function deriveTier(user: AuthUser | null) {
+  if (!user) return { tier: null as SubscriptionTier | null, isPro: false, isWhale: false };
+  const t = user.subscriptionTier;
+  return { tier: t, isPro: t === "pro" || t === "whale", isWhale: t === "whale" };
+}
+
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   loading: true,
-  setUser: (user) => set({ user, loading: false }),
+  tier: null,
+  isPro: false,
+  isWhale: false,
+  setUser: (user) => set({ user, loading: false, ...deriveTier(user) }),
   setSubscription: (tier) =>
-    set((state) => ({
-      user: state.user ? { ...state.user, subscriptionTier: tier } : null,
-    })),
-  logout: () => set({ user: null, loading: false }),
+    set((state) => {
+      const updated = state.user ? { ...state.user, subscriptionTier: tier } : null;
+      return { user: updated, ...deriveTier(updated) };
+    }),
+  logout: () => set({ user: null, loading: false, tier: null, isPro: false, isWhale: false }),
   setLoading: (loading) => set({ loading }),
 }));

@@ -39,7 +39,7 @@ export async function createCheckoutUrl(options: {
       },
     },
     productOptions: {
-      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard?checkout=success`,
+      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/billing?success=true`,
     },
   });
 

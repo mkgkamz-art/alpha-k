@@ -2,7 +2,7 @@
  * GET /api/alerts/trending
  *
  * Top 5 tokens by alert count in the last 24h.
- * Enriched with mock price data (real price feed TODO).
+ * Aggregates token mentions from alert titles.
  */
 
 import { NextResponse } from "next/server";

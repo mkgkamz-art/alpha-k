@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useMemo, useRef } from "react";
 import {
   useInfiniteQuery,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
@@ -41,6 +42,7 @@ export function useAlerts(options: UseAlertsOptions = {}) {
 
   const query = useInfiniteQuery<AlertsPage>({
     queryKey: alertKeys.list({ type, severity }),
+    staleTime: 10 * 1000,
     queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams();
       if (type !== "all") params.set("type", type);
@@ -48,7 +50,9 @@ export function useAlerts(options: UseAlertsOptions = {}) {
       if (pageParam) params.set("cursor", pageParam as string);
 
       const res = await fetch(`/api/alerts?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch alerts");
+      if (!res.ok) {
+        return { items: [], nextCursor: null, hasMore: false } as AlertsPage;
+      }
       return res.json() as Promise<AlertsPage>;
     },
     initialPageParam: null as string | null,
@@ -190,42 +194,60 @@ export function useAlerts(options: UseAlertsOptions = {}) {
 
 /* ── Trending ── */
 
+export interface TrendingToken {
+  rank: number;
+  symbol: string;
+  alertCount: number;
+}
+
 export function useTrending() {
-  return useInfiniteQuery({
+  const query = useQuery<{ trending: TrendingToken[] }>({
     queryKey: alertKeys.trending(),
     queryFn: async () => {
       const res = await fetch("/api/alerts/trending");
       if (!res.ok) throw new Error("Failed to fetch trending");
-      return res.json() as Promise<{
-        trending: Array<{
-          rank: number;
-          symbol: string;
-          alertCount: number;
-        }>;
-      }>;
+      return res.json();
     },
-    initialPageParam: null,
-    getNextPageParam: () => null,
+    refetchInterval: 60_000,
   });
+
+  return {
+    trending: query.data?.trending ?? [],
+    ...query,
+  };
 }
 
-/* ── Whale Movements ── */
+/* ── Whale Events ── */
 
-export function useWhaleMovements() {
-  return useInfiniteQuery({
+export interface WhaleEventRow {
+  id: string;
+  tx_hash: string;
+  blockchain: string;
+  from_address: string;
+  from_label: string;
+  to_address: string;
+  to_label: string;
+  symbol: string;
+  amount: number;
+  usd_value: number;
+  event_type: string;
+  detected_at: string;
+}
+
+export function useWhaleEvents() {
+  const query = useQuery<{ events: WhaleEventRow[] }>({
     queryKey: alertKeys.whaleMovements(),
     queryFn: async () => {
       const res = await fetch("/api/alerts/whale-movements");
-      if (!res.ok) throw new Error("Failed to fetch whale movements");
-      return res.json() as Promise<{
-        movements: Array<{
-          exchange: string;
-          inflow: number;
-          outflow: number;
-        }>;
-      }>;
+      if (!res.ok) throw new Error("Failed to fetch whale events");
+      return res.json();
     },
-    initialPageParam: null,
-    getNextPageParam: () => null,
+    staleTime: 30 * 1000,
+    refetchInterval: 120_000, // 2 min — matches cron interval
   });
+
+  return {
+    events: query.data?.events ?? [],
+    ...query,
+  };
 }

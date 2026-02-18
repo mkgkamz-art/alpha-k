@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendDigestEmail } from "@/lib/notifications/email";
+import { verifyCronSecret, cronUnauthorized } from "@/lib/cron-auth";
 import type { AlertType, Severity } from "@/types";
 
 /**
@@ -11,9 +12,7 @@ import type { AlertType, Severity } from "@/types";
  */
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyCronSecret(req)) return cronUnauthorized();
 
   const started = Date.now();
 
@@ -96,11 +95,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const authHeader = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return authHeader === `Bearer ${secret}`;
 }

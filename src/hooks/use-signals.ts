@@ -1,17 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { TradingSignal, Chain, Timeframe, SignalType } from "@/types";
+import type { Signal, SignalCategory } from "@/types";
 
 interface SignalsResponse {
-  signals: TradingSignal[];
+  signals: Signal[];
   message?: string;
 }
 
 interface UseSignalsOptions {
-  chain?: Chain | "all";
-  timeframe?: Timeframe | "all";
-  type?: SignalType | "all";
+  timeframe?: string;
+  type?: SignalCategory | "all";
 }
 
 export const signalKeys = {
@@ -20,13 +19,13 @@ export const signalKeys = {
 };
 
 export function useSignals(options: UseSignalsOptions = {}) {
-  const { chain = "all", timeframe = "all", type = "all" } = options;
+  const { timeframe = "all", type = "all" } = options;
 
   const query = useQuery<SignalsResponse>({
-    queryKey: signalKeys.list({ chain, timeframe, type }),
+    queryKey: signalKeys.list({ timeframe, type }),
+    staleTime: 30 * 1000,
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (chain !== "all") params.set("chain", chain);
       if (timeframe !== "all") params.set("timeframe", timeframe);
       if (type !== "all") params.set("type", type);
 

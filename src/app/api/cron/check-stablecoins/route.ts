@@ -4,18 +4,17 @@ import {
   fetchStablecoinPrices,
   checkStablecoinAlerts,
 } from "@/lib/blockchain/defi-monitor";
+import { verifyCronSecret, cronUnauthorized } from "@/lib/cron-auth";
+import type { Json } from "@/types/database.types";
 
 /**
  * Cron: Check stablecoin peg stability (every 1 minute)
  *
- * Fetches stablecoin prices from CoinGecko via defi-monitor module,
- * upserts into stablecoin_pegs table, and creates alert_events for deviations.
+ * Fetches stablecoin prices from CoinGecko,
+ * upserts into stablecoin_status table, and creates alert_events for depegging.
  */
-
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyCronSecret(req)) return cronUnauthorized();
 
   const started = Date.now();
 
@@ -24,73 +23,87 @@ export async function GET(req: NextRequest) {
     const alerts = checkStablecoinAlerts(prices);
     const supabase = createAdminClient();
 
-    // Upsert stablecoin_pegs table
-    for (const p of prices) {
-      const absDeviation = Math.abs(p.deviationPct);
-      const status =
-        absDeviation >= 2 ? "depeg" : absDeviation >= 0.5 ? "warning" : "normal";
-
-      await supabase
-        .from("stablecoin_pegs")
+    // Upsert stablecoin_status table
+    if (prices.length > 0) {
+      const { error: upsertError } = await supabase
+        .from("stablecoin_status")
         .upsert(
-          {
+          prices.map((p) => ({
             symbol: p.symbol,
-            current_price: p.price,
-            peg_deviation_pct: p.deviationPct,
-            price_24h_high: p.price, // Will be enriched with actual 24h range
-            price_24h_low: p.price,
-            status,
-            updated_at: new Date().toISOString(),
-          },
+            name: p.name,
+            current_price: p.current_price,
+            peg_deviation: p.peg_deviation,
+            is_depegged: p.is_depegged,
+            last_updated: p.last_updated,
+          })),
           { onConflict: "symbol" }
         );
+
+      if (upsertError) {
+        console.error("[check-stablecoins] Upsert error:", upsertError);
+        throw upsertError;
+      }
     }
 
-    // Create alert_events for significant deviations
+    // Create alert_events for depegging
+    let alertCount = 0;
     if (alerts.length > 0) {
-      const alertEvents = alerts.map((a) => ({
-        type: "risk" as const,
-        severity: a.severity === "critical" ? ("critical" as const) : ("high" as const),
-        title: `${a.symbol} Peg Deviation: ${a.deviationPct > 0 ? "+" : ""}${a.deviationPct.toFixed(3)}%`,
-        description: `${a.symbol} is trading at $${a.currentPrice.toFixed(4)}, deviating ${Math.abs(a.deviationPct).toFixed(3)}% from its $1.00 peg.`,
-        metadata: {
-          symbol: a.symbol,
-          price: a.currentPrice,
-          deviation_pct: a.deviationPct,
-        },
-      }));
+      const { data: riskRules } = await supabase
+        .from("alert_rules")
+        .select("id, user_id")
+        .eq("type", "risk")
+        .eq("is_active", true);
 
-      console.log(`[cron/check-stablecoins] ${alerts.length} alerts generated`);
+      if (riskRules && riskRules.length > 0) {
+        const alertInserts = [];
 
-      // Insert alert_events for each subscribed user with risk rules
-      // For now, log the alerts — full dispatch will use dispatcher module
-      for (const ae of alertEvents) {
-        console.log(`[cron/check-stablecoins] ALERT: ${ae.title}`);
+        for (const alert of alerts) {
+          for (const rule of riskRules) {
+            alertInserts.push({
+              rule_id: rule.id,
+              user_id: rule.user_id,
+              type: "risk" as const,
+              severity: alert.severity,
+              title: `${alert.symbol} peg deviation warning: ${alert.deviationPct > 0 ? "+" : ""}${alert.deviationPct.toFixed(3)}%`,
+              description: `${alert.symbol} is trading at $${alert.currentPrice.toFixed(4)}, deviating ${Math.abs(alert.deviationPct).toFixed(3)}% from its $1.00 peg.`,
+              metadata: {
+                symbol: alert.symbol,
+                price: alert.currentPrice,
+                deviation_pct: alert.deviationPct,
+              } as unknown as Json,
+            });
+          }
+        }
+
+        if (alertInserts.length > 0) {
+          const { error: alertError } = await supabase
+            .from("alert_events")
+            .insert(alertInserts);
+
+          if (alertError) {
+            console.error("[check-stablecoins] Alert insert error:", alertError);
+          } else {
+            alertCount = alertInserts.length;
+          }
+        }
       }
     }
 
     console.log(
-      `[cron/check-stablecoins] ${prices.length} coins checked, ${alerts.length} alerts in ${Date.now() - started}ms`
+      `[check-stablecoins] ${prices.length} coins checked, ${alertCount} alerts in ${Date.now() - started}ms`
     );
 
     return NextResponse.json({
       success: true,
       checked: prices.length,
-      alerts: alerts.length,
+      alerts: alertCount,
       duration: Date.now() - started,
     });
   } catch (err) {
-    console.error("[cron/check-stablecoins] Error:", err);
+    console.error("[check-stablecoins] Error:", err);
     return NextResponse.json(
       { error: "Failed to check stablecoins" },
       { status: 500 }
     );
   }
-}
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const authHeader = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return authHeader === `Bearer ${secret}`;
 }

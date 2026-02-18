@@ -1,133 +1,201 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import type { Chain, SignalType, Timeframe } from "@/types";
-
 /**
  * Cron: Generate trading signals (every 4 hours)
  *
- * Runs technical analysis on monitored tokens to generate
- * buy/sell/hold signals with confidence scores.
- *
- * Uses simple moving average crossover + RSI as baseline strategy.
- * In production, this would call an external TA service or ML model.
+ * 1. Read token_prices from DB (top 20 by market cap)
+ * 2. Read price_history for each token (past 7 days)
+ * 3. Run signal detection (oversold/overbought, momentum shift, volume spike, volatility)
+ * 4. Insert generated signals into `signals` table
+ * 5. For confidence >= 70%: create alert_events + dispatch notifications
  */
 
-const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
-
-/** Tokens to generate signals for */
-const SIGNAL_TOKENS = [
-  { id: "bitcoin", symbol: "BTC", name: "Bitcoin", chain: "ethereum" as Chain },
-  { id: "ethereum", symbol: "ETH", name: "Ethereum", chain: "ethereum" as Chain },
-  { id: "solana", symbol: "SOL", name: "Solana", chain: "solana" as Chain },
-  { id: "binancecoin", symbol: "BNB", name: "BNB", chain: "bsc" as Chain },
-  { id: "avalanche-2", symbol: "AVAX", name: "Avalanche", chain: "ethereum" as Chain },
-  { id: "chainlink", symbol: "LINK", name: "Chainlink", chain: "ethereum" as Chain },
-  { id: "uniswap", symbol: "UNI", name: "Uniswap", chain: "ethereum" as Chain },
-  { id: "aave", symbol: "AAVE", name: "Aave", chain: "ethereum" as Chain },
-  { id: "matic-network", symbol: "MATIC", name: "Polygon", chain: "polygon" as Chain },
-  { id: "arbitrum", symbol: "ARB", name: "Arbitrum", chain: "arbitrum" as Chain },
-];
-
-const TIMEFRAMES: Timeframe[] = ["1d"];
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  generateSignals,
+  getSignalSeverity,
+  type TokenData,
+} from "@/lib/blockchain/signal-generator";
+import {
+  dispatchNotification,
+  type UserNotificationConfig,
+  type DeliveryChannels,
+} from "@/lib/notifications/dispatcher";
+import { verifyCronSecret, cronUnauthorized } from "@/lib/cron-auth";
+import type { Json } from "@/types/database.types";
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyCronSecret(req)) return cronUnauthorized();
 
   const started = Date.now();
 
   try {
     const supabase = createAdminClient();
-    const apiKey = process.env.COINGECKO_API_KEY;
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (apiKey) headers["x-cg-demo-api-key"] = apiKey;
 
-    const ids = SIGNAL_TOKENS.map((t) => t.id).join(",");
+    // ── Step 1: Fetch top 20 token_prices ──
+    const { data: prices, error: pricesErr } = await supabase
+      .from("token_prices")
+      .select("*")
+      .order("market_cap", { ascending: false })
+      .limit(20);
 
-    // Fetch market data with 24h/7d price changes
-    const res = await fetch(
-      `${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false&price_change_percentage=24h,7d`,
-      { headers, signal: AbortSignal.timeout(15_000) }
-    );
+    if (pricesErr) throw pricesErr;
+    if (!prices || prices.length === 0) {
+      return NextResponse.json({ success: true, signals: 0, message: "No price data" });
+    }
 
-    if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+    // ── Step 2: Batch-fetch price_history for all tokens (past 7 days) ──
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const tokenIds = prices.map((p) => p.token_id);
 
-    const markets = (await res.json()) as Array<{
-      id: string;
-      current_price: number;
-      price_change_percentage_24h?: number;
-      price_change_percentage_7d_in_currency?: number;
-      high_24h?: number;
-      low_24h?: number;
-      total_volume?: number;
-      market_cap?: number;
-    }>;
+    const { data: allHistory } = await supabase
+      .from("price_history")
+      .select("token_id, price, recorded_at")
+      .in("token_id", tokenIds)
+      .gte("recorded_at", sevenDaysAgo)
+      .order("recorded_at", { ascending: false });
 
-    let signalCount = 0;
+    // Group history by token_id
+    const historyMap = new Map<string, { price: number; recorded_at: string }[]>();
+    for (const h of allHistory ?? []) {
+      const list = historyMap.get(h.token_id) ?? [];
+      list.push({ price: h.price, recorded_at: h.recorded_at });
+      historyMap.set(h.token_id, list);
+    }
 
-    for (const market of markets) {
-      const token = SIGNAL_TOKENS.find((t) => t.id === market.id);
-      if (!token) continue;
+    const tokenDataList: TokenData[] = prices.map((p) => ({
+      symbol: p.symbol.toUpperCase(),
+      name: p.name,
+      currentPrice: Number(p.current_price),
+      priceChange1h: p.price_change_1h != null ? Number(p.price_change_1h) : null,
+      priceChange24h: p.price_change_24h != null ? Number(p.price_change_24h) : null,
+      priceChange7d: p.price_change_7d != null ? Number(p.price_change_7d) : null,
+      totalVolume: Number(p.total_volume),
+      priceHistory: (historyMap.get(p.token_id) ?? []).slice(0, 168),
+    }));
 
-      const price = market.current_price;
-      const change24h = market.price_change_percentage_24h ?? 0;
-      const change7d = market.price_change_percentage_7d_in_currency ?? 0;
-      const high24h = market.high_24h ?? price;
-      const low24h = market.low_24h ?? price;
+    // ── Step 3: Generate signals for all timeframes ──
+    const signals1d = generateSignals(tokenDataList, "1D");
+    const signals4h = generateSignals(tokenDataList, "4H");
+    const signals1w = generateSignals(tokenDataList, "1W");
+    const allSignals = [...signals1d, ...signals4h, ...signals1w];
 
-      for (const timeframe of TIMEFRAMES) {
-        // Simple signal generation based on momentum
-        const { signalType, confidence, basisTags } = generateSignal(
-          change24h,
-          change7d,
-          price,
-          high24h,
-          low24h
-        );
+    // ── Step 4: Batch insert into signals table ──
+    let insertCount = 0;
+    if (allSignals.length > 0) {
+      const rows = allSignals.map((sig) => ({
+        token_symbol: sig.tokenSymbol,
+        token_name: sig.tokenName,
+        signal_type: sig.signalType,
+        signal_name: sig.signalName,
+        confidence: sig.confidence,
+        timeframe: sig.timeframe,
+        description: sig.description,
+        indicators: sig.indicators as Json,
+        price_at_signal: sig.priceAtSignal,
+      }));
+      const { data: inserted } = await supabase
+        .from("signals")
+        .insert(rows)
+        .select("id");
+      insertCount = inserted?.length ?? 0;
+    }
 
-        // Calculate entry/target/stop levels
-        const entryLow = price * 0.99;
-        const entryHigh = price * 1.01;
-        const target1 =
-          signalType === "buy" ? price * 1.05 : price * 0.95;
-        const target2 =
-          signalType === "buy" ? price * 1.10 : price * 0.90;
-        const stopLoss =
-          signalType === "buy" ? price * 0.97 : price * 1.03;
+    // ── Step 5: Alert events for high confidence signals ──
+    const highConfidence = allSignals.filter((s) => s.confidence >= 70);
+    let alertCount = 0;
 
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + (timeframe === "1d" ? 24 : timeframe === "4h" ? 4 : 168));
+    if (highConfidence.length > 0) {
+      const { data: rules } = await supabase
+        .from("alert_rules")
+        .select("user_id")
+        .eq("type", "price_signal")
+        .eq("is_active", true);
 
-        const { error } = await supabase.from("trading_signals").insert({
-          token_symbol: token.symbol,
-          token_name: token.name,
-          chain: token.chain,
-          signal_type: signalType,
-          confidence,
-          entry_low: entryLow,
-          entry_high: entryHigh,
-          target_1: target1,
-          target_2: target2,
-          stop_loss: stopLoss,
-          basis_tags: basisTags,
-          timeframe,
-          status: "active",
-          expires_at: expiresAt.toISOString(),
-        });
+      const userIds = [...new Set(rules?.map((r) => r.user_id) ?? [])];
 
-        if (!error) signalCount++;
+      // Pre-fetch all user profiles in one query
+      const { data: userProfiles } = userIds.length > 0
+        ? await supabase.from("users").select("*").in("id", userIds)
+        : await supabase.from("users").select("*").eq("id", "__none__");
+
+      const profileMap = new Map(
+        (userProfiles ?? []).map((u) => [u.id, u])
+      );
+
+      // Batch build all alert inserts
+      const alertInserts = highConfidence.flatMap((sig) => {
+        const severity = getSignalSeverity(sig.confidence);
+        return userIds.map((userId) => ({
+          user_id: userId,
+          type: "price_signal" as const,
+          severity,
+          title: `${sig.tokenSymbol} — ${sig.signalName}`,
+          description: sig.description,
+          metadata: {
+            signal_type: sig.signalType,
+            signal_name: sig.signalName,
+            confidence: sig.confidence,
+            timeframe: sig.timeframe,
+            price_at_signal: sig.priceAtSignal,
+            indicators: sig.indicators,
+          } as Json,
+        }));
+      });
+
+      if (alertInserts.length > 0) {
+        const { data: insertedAlerts } = await supabase
+          .from("alert_events")
+          .insert(alertInserts)
+          .select("id, user_id, type, severity, title, description");
+
+        alertCount = insertedAlerts?.length ?? 0;
+
+        // Dispatch notifications for users with telegram
+        if (insertedAlerts) {
+          const notifPromises = insertedAlerts
+            .filter((a) => profileMap.get(a.user_id)?.telegram_chat_id)
+            .map((a) => {
+              const profile = profileMap.get(a.user_id)!;
+              const config: UserNotificationConfig = {
+                subscriptionTier: profile.subscription_tier as "free" | "pro" | "whale",
+                email: profile.email,
+                telegramChatId: profile.telegram_chat_id,
+                discordWebhookUrl: profile.discord_webhook_url,
+                phoneNumber: profile.phone_number,
+                pushSubscriptions: [],
+                deliveryChannels: { telegram: true } as DeliveryChannels,
+                quietHoursStart: profile.quiet_hours_start,
+                quietHoursEnd: profile.quiet_hours_end,
+                timezone: profile.timezone,
+                maxAlertsPerHour: profile.max_alerts_per_hour,
+              };
+              return dispatchNotification(
+                {
+                  id: a.id,
+                  userId: a.user_id,
+                  type: a.type,
+                  severity: a.severity,
+                  title: a.title,
+                  description: a.description ?? "",
+                },
+                config
+              ).catch(() => {}); // Don't fail cron if notification dispatch fails
+            });
+
+          await Promise.allSettled(notifPromises);
+        }
       }
     }
 
     console.log(
-      `[cron/signal-generator] Generated ${signalCount} signals in ${Date.now() - started}ms`
+      `[cron/signal-generator] ${insertCount} signals, ${alertCount} alerts in ${Date.now() - started}ms`
     );
 
     return NextResponse.json({
       success: true,
-      signals: signalCount,
-      tokens: markets.length,
+      signals: insertCount,
+      highConfidence: highConfidence.length,
+      alerts: alertCount,
       duration: Date.now() - started,
     });
   } catch (err) {
@@ -137,80 +205,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/* ── Signal Generation Logic ── */
-
-function generateSignal(
-  change24h: number,
-  change7d: number,
-  price: number,
-  high24h: number,
-  low24h: number
-): { signalType: SignalType; confidence: number; basisTags: string[] } {
-  const basisTags: string[] = [];
-  let score = 0; // positive = bullish, negative = bearish
-
-  // 24h momentum
-  if (change24h > 3) {
-    score += 2;
-    basisTags.push("Strong 24h momentum");
-  } else if (change24h > 1) {
-    score += 1;
-    basisTags.push("Positive 24h trend");
-  } else if (change24h < -3) {
-    score -= 2;
-    basisTags.push("Strong 24h decline");
-  } else if (change24h < -1) {
-    score -= 1;
-    basisTags.push("Negative 24h trend");
-  }
-
-  // 7d momentum
-  if (change7d > 10) {
-    score += 2;
-    basisTags.push("Strong weekly uptrend");
-  } else if (change7d > 3) {
-    score += 1;
-    basisTags.push("Weekly uptrend");
-  } else if (change7d < -10) {
-    score -= 2;
-    basisTags.push("Strong weekly decline");
-  } else if (change7d < -3) {
-    score -= 1;
-    basisTags.push("Weekly downtrend");
-  }
-
-  // Price position within 24h range (proximity to support/resistance)
-  const range = high24h - low24h;
-  if (range > 0) {
-    const position = (price - low24h) / range;
-    if (position < 0.25) {
-      score += 1;
-      basisTags.push("Near 24h support");
-    } else if (position > 0.75) {
-      score -= 1;
-      basisTags.push("Near 24h resistance");
-    }
-  }
-
-  // Determine signal
-  let signalType: SignalType;
-  if (score >= 2) signalType = "buy";
-  else if (score <= -2) signalType = "sell";
-  else signalType = "hold";
-
-  // Confidence (40-90%)
-  const confidence = Math.min(90, Math.max(40, 50 + Math.abs(score) * 10));
-
-  if (basisTags.length === 0) basisTags.push("Neutral market conditions");
-
-  return { signalType, confidence, basisTags };
-}
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const authHeader = req.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return authHeader === `Bearer ${secret}`;
 }

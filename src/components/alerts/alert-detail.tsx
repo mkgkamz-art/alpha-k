@@ -65,6 +65,8 @@ export interface AlertDetailProps {
   impactScore?: number;
   impactMetrics?: ImpactMetric[];
   onTrackWallet?: () => void;
+  /** Custom left-column content for non-whale types */
+  children?: React.ReactNode;
 }
 
 /* ── Hero Section ── */
@@ -271,7 +273,11 @@ export function AlertDetail({
   impactScore,
   impactMetrics = [],
   onTrackWallet,
+  children,
 }: AlertDetailProps) {
+  const hasTransactionFlow = from && to;
+  const hasLeftContent = hasTransactionFlow || children;
+
   return (
     <div className="flex flex-col gap-6">
       <AlertHero
@@ -285,16 +291,25 @@ export function AlertDetail({
       />
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Left: Transaction Flow */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-          {from && to && (
-            <TransactionFlowCard from={from} to={to} txMeta={txMeta} />
-          )}
-        </div>
+        {/* Left: Transaction Flow or type-specific content */}
+        {hasLeftContent && (
+          <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+            {hasTransactionFlow ? (
+              <TransactionFlowCard from={from} to={to} txMeta={txMeta} />
+            ) : (
+              children
+            )}
+          </div>
+        )}
 
         {/* Right: Impact Analysis */}
         {impactScore !== undefined && (
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <div
+            className={cn(
+              "col-span-12 flex flex-col gap-6",
+              hasLeftContent ? "lg:col-span-4" : "lg:col-span-12"
+            )}
+          >
             <ImpactPanel score={impactScore} metrics={impactMetrics} />
           </div>
         )}

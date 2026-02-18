@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { memo, useState, useCallback } from "react";
 import {
   Plus,
   Search,
   EyeOff,
   Eye,
   Trash2,
+  Lock,
   Loader2,
+  Zap,
 } from "lucide-react";
+import Link from "next/link";
 import { useWatchlist } from "@/hooks/use-watchlist";
+import { useAuthStore } from "@/stores/auth-store";
+import { ACCESS_MATRIX } from "@/lib/subscription";
+import { AuthGate } from "@/components/auth-gate";
+import { SurgeSideWidget, KimchiSideWidget, ListingSideWidget } from "@/components/widgets";
 import {
   DataTable,
   TableHead,
@@ -43,11 +50,29 @@ const tokenColors: Record<string, string> = {
   MKR: "#1AAB9B",
 };
 
+/* ── Default tokens for unauthenticated users ── */
+const defaultTokens: WatchlistItem[] = [
+  { id: "def-btc", user_id: "", token_symbol: "BTC", token_name: "Bitcoin", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-eth", user_id: "", token_symbol: "ETH", token_name: "Ethereum", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-sol", user_id: "", token_symbol: "SOL", token_name: "Solana", token_address: "", chain: "solana", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-arb", user_id: "", token_symbol: "ARB", token_name: "Arbitrum", token_address: "", chain: "arbitrum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-op", user_id: "", token_symbol: "OP", token_name: "Optimism", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-link", user_id: "", token_symbol: "LINK", token_name: "Chainlink", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-uni", user_id: "", token_symbol: "UNI", token_name: "Uniswap", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-aave", user_id: "", token_symbol: "AAVE", token_name: "Aave", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-mkr", user_id: "", token_symbol: "MKR", token_name: "Maker", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+  { id: "def-usdc", user_id: "", token_symbol: "USDC", token_name: "USD Coin", token_address: "", chain: "ethereum", is_muted: false, added_at: new Date().toISOString() },
+];
+
 type SortKey = "added_at" | "token_symbol";
 type SortDir = "asc" | "desc";
 
 export default function WatchlistPage() {
+  const user = useAuthStore((s) => s.user);
+  const isPro = useAuthStore((s) => s.isPro);
   const { items, isLoading, addToken, removeToken, toggleMute } = useWatchlist();
+  const freeLimit = ACCESS_MATRIX.watchlist.free.maxCoins;
+  const isAtFreeLimit = !isPro && user && items.length >= freeLimit;
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("added_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -58,6 +83,9 @@ export default function WatchlistPage() {
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [newChain, setNewChain] = useState<Chain>("ethereum");
+
+  // Use default tokens for unauthenticated users
+  const displayItems = user ? items : defaultTokens;
 
   const handleSort = useCallback(
     (key: SortKey) => {
@@ -71,7 +99,7 @@ export default function WatchlistPage() {
     [sortKey]
   );
 
-  const filtered = items
+  const filtered = displayItems
     .filter(
       (item) =>
         item.token_symbol.toLowerCase().includes(search.toLowerCase()) ||
@@ -108,12 +136,12 @@ export default function WatchlistPage() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="p-4 md:p-6 flex flex-col gap-6 max-w-[1440px] w-full mx-auto">
+      <div className="p-4 md:p-6 flex flex-col gap-6 max-w-screen-2xl w-full mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-lg font-bold">
-            My Watchlist{" "}
-            <span className="text-text-secondary font-normal">({items.length})</span>
+            {user ? "My Watchlist" : "Popular Tokens"}{" "}
+            <span className="text-text-secondary font-normal">({displayItems.length})</span>
           </h1>
           <div className="flex items-center gap-3">
             <div className="relative w-64">
@@ -125,15 +153,27 @@ export default function WatchlistPage() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={() => setAddModalOpen(true)}>
-              <Plus className="size-4 mr-1" />
-              Add Token
-            </Button>
+            <AuthGate message="Sign in to add tokens to your watchlist">
+              {isAtFreeLimit ? (
+                <Link
+                  href="/billing"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-primary/10 text-accent-primary text-xs font-medium hover:bg-accent-primary/20 transition-colors"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  {freeLimit}개 한도 · Pro 업그레이드
+                </Link>
+              ) : (
+                <Button onClick={() => setAddModalOpen(true)}>
+                  <Plus className="size-4 mr-1" />
+                  Add Token
+                </Button>
+              )}
+            </AuthGate>
           </div>
         </div>
 
         {/* Table */}
-        {isLoading ? (
+        {isLoading && user ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="size-6 text-text-secondary animate-spin" />
           </div>
@@ -161,7 +201,7 @@ export default function WatchlistPage() {
                   Token
                 </TableHeaderCell>
                 <TableHeaderCell>Chain</TableHeaderCell>
-                <TableHeaderCell align="center">Muted</TableHeaderCell>
+                {user && <TableHeaderCell align="center">Muted</TableHeaderCell>}
                 <TableHeaderCell
                   sortable
                   sorted={sortKey === "added_at" ? sortDir : false}
@@ -169,7 +209,7 @@ export default function WatchlistPage() {
                 >
                   Added
                 </TableHeaderCell>
-                <TableHeaderCell align="right">Actions</TableHeaderCell>
+                {user && <TableHeaderCell align="right">Actions</TableHeaderCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -178,6 +218,7 @@ export default function WatchlistPage() {
                   key={item.id}
                   item={item}
                   index={idx + 1}
+                  showActions={!!user}
                   onToggleMute={() =>
                     toggleMute.mutate({ id: item.id, is_muted: !item.is_muted })
                   }
@@ -188,8 +229,27 @@ export default function WatchlistPage() {
           </DataTable>
         )}
 
-        {/* Quick Stats */}
-        {items.length > 0 && (
+        {/* Watchlist limit notice (Free users) */}
+        {isAtFreeLimit && (
+          <div className="flex items-center justify-between bg-bg-secondary border border-accent-primary/20 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-accent-primary" />
+              <p className="text-sm text-text-secondary">
+                워치리스트 <span className="font-medium text-text-primary">{freeLimit}개</span> 한도에 도달했습니다
+              </p>
+            </div>
+            <Link
+              href="/billing"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-primary text-bg-primary text-xs font-semibold hover:bg-accent-primary/90 transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Pro 업그레이드
+            </Link>
+          </div>
+        )}
+
+        {/* Quick Stats — only for authenticated users with tokens */}
+        {user && items.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               label="Total Tokens"
@@ -208,6 +268,18 @@ export default function WatchlistPage() {
             />
           </div>
         )}
+
+        {/* ── 관련 기능 ── */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+            관련 기능
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <SurgeSideWidget />
+            <KimchiSideWidget />
+            <ListingSideWidget />
+          </div>
+        </div>
       </div>
 
       {/* Add Token Modal */}
@@ -291,14 +363,16 @@ export default function WatchlistPage() {
 }
 
 /* ── Row Component ── */
-function WatchlistRow({
+const WatchlistRow = memo(function WatchlistRow({
   item,
   index,
+  showActions,
   onToggleMute,
   onRemove,
 }: {
   item: WatchlistItem;
   index: number;
+  showActions: boolean;
   onToggleMute: () => void;
   onRemove: () => void;
 }) {
@@ -326,36 +400,40 @@ function WatchlistRow({
       <TableCell>
         <span className="text-xs text-text-secondary capitalize">{item.chain}</span>
       </TableCell>
-      <TableCell align="center">
-        {item.is_muted ? (
-          <span className="text-xs text-signal-warning">Muted</span>
-        ) : (
-          <span className="text-xs text-signal-success">Active</span>
-        )}
-      </TableCell>
+      {showActions && (
+        <TableCell align="center">
+          {item.is_muted ? (
+            <span className="text-xs text-signal-warning">Muted</span>
+          ) : (
+            <span className="text-xs text-signal-success">Active</span>
+          )}
+        </TableCell>
+      )}
       <TableCell mono className="text-text-secondary text-xs">
         {new Date(item.added_at).toLocaleDateString()}
       </TableCell>
-      <TableCell align="right">
-        <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={onToggleMute}
-            className="p-1 text-text-disabled hover:text-text-primary transition-colors"
-            aria-label={item.is_muted ? "Unmute" : "Mute"}
-          >
-            {item.is_muted ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="p-1 text-text-disabled hover:text-signal-danger transition-colors"
-            aria-label="Remove from watchlist"
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </div>
-      </TableCell>
+      {showActions && (
+        <TableCell align="right">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onToggleMute}
+              className="p-1 text-text-disabled hover:text-text-primary transition-colors"
+              aria-label={item.is_muted ? "Unmute" : "Mute"}
+            >
+              {item.is_muted ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={onRemove}
+              className="p-1 text-text-disabled hover:text-signal-danger transition-colors"
+              aria-label="Remove from watchlist"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        </TableCell>
+      )}
     </TableRow>
   );
-}
+});

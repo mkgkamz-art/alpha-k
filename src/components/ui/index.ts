@@ -39,6 +39,7 @@ export { SectionCard, type SectionCardProps } from "./section-card";
 export { AlertBanner, type AlertBannerProps } from "./alert-banner";
 export { Tooltip, type TooltipProps } from "./tooltip";
 export { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, type ModalProps, type ModalContentProps, type ModalHeaderProps } from "./modal";
+export { Toast, type ToastProps } from "./toast";
 
 /* ── Form ── */
 export { FormField, type FormFieldProps } from "./form-field";

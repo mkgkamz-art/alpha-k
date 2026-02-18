@@ -4,72 +4,68 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Bell,
-  Star,
-  TrendingUp,
+  Radio,
+  Flame,
+  Flag,
+  Zap,
+  Fish,
+  BarChart3,
+  Shield,
   Unlock,
-  ShieldAlert,
+  Droplets,
+  Star,
   Settings,
+  Gem,
   ChevronLeft,
   ChevronRight,
-  Plus,
   X,
-  CreditCard,
+  LogIn,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { useAuthStore } from "@/stores/auth-store";
+import { UserMenu } from "./user-menu";
 
 /* ── Nav config ── */
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  badge?: number;
+  badge?: string | null;
 }
 
-const mainNav: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/alerts", label: "Alerts", icon: Bell, badge: 3 },
-  { href: "/watchlist", label: "Watchlist", icon: Star },
-  { href: "/signals", label: "Signals", icon: TrendingUp },
+const HOT_MENU: NavItem[] = [
+  { label: "라이브 피드", icon: Radio, href: "/dashboard", badge: null },
+  { label: "급등 레이더", icon: Flame, href: "/surge", badge: "NEW" },
+  { label: "김치프리미엄", icon: Flag, href: "/kimchi", badge: "NEW" },
+  { label: "상장 알림", icon: Zap, href: "/listing", badge: "NEW" },
 ];
 
-const monitorNav: NavItem[] = [
-  { href: "/unlocks", label: "Token Unlocks", icon: Unlock },
-  { href: "/defi-risk", label: "DeFi Risk", icon: ShieldAlert },
+const INTELLIGENCE_MENU: NavItem[] = [
+  { label: "고래 추적", icon: Fish, href: "/whale", badge: null },
+  { label: "시그널", icon: BarChart3, href: "/signals", badge: null },
+  { label: "DeFi 리스크", icon: Shield, href: "/risk", badge: null },
+  { label: "토큰 언락", icon: Unlock, href: "/unlocks", badge: null },
+  { label: "유동성", icon: Droplets, href: "/liquidity", badge: null },
 ];
 
-const bottomNav: NavItem[] = [
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/settings?tab=billing", label: "Billing", icon: CreditCard },
+const BOTTOM_MENU: NavItem[] = [
+  { label: "워치리스트", icon: Star, href: "/watchlist", badge: null },
+  { label: "설정", icon: Settings, href: "/settings", badge: null },
+  { label: "Pro 구독", icon: Gem, href: "/billing", badge: null },
 ];
 
 /* ── Sidebar ── */
 export function Sidebar() {
-  const { collapsed, mobileOpen, toggle, setCollapsed, closeMobile } =
-    useSidebarStore();
-  const { user } = useAuthStore();
+  const collapsed = useSidebarStore((s) => s.collapsed);
+  const mobileOpen = useSidebarStore((s) => s.mobileOpen);
+  const toggle = useSidebarStore((s) => s.toggle);
+  const setCollapsed = useSidebarStore((s) => s.setCollapsed);
+  const closeMobile = useSidebarStore((s) => s.closeMobile);
+  const user = useAuthStore((s) => s.user);
+  const tier = useAuthStore((s) => s.tier);
   const pathname = usePathname();
-
-  const tierLabel =
-    user?.subscriptionTier === "whale"
-      ? "Whale Plan"
-      : user?.subscriptionTier === "pro"
-        ? "Pro Plan"
-        : "Free Plan";
-
-  const initials = user?.displayName
-    ? user.displayName
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "U";
 
   // Auto-collapse on tablet (768-1023)
   useEffect(() => {
@@ -96,21 +92,24 @@ export function Sidebar() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [mobileOpen, closeMobile]);
 
+  // Tier badge for billing item
+  const tierLabel =
+    tier === "whale" ? "WHALE" : tier === "pro" ? "PRO" : "FREE";
+
   const sidebarContent = (
     <>
       {/* ── Logo ── */}
       <div className="flex items-center justify-between h-14 px-4 border-b border-border-default shrink-0">
         <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-          <div className="w-8 h-8 rounded-[6px] bg-accent-primary flex items-center justify-center shrink-0">
-            <span className="text-bg-primary font-bold text-[14px]">B</span>
+          <div className="w-8 h-8 rounded-md bg-accent-primary flex items-center justify-center shrink-0">
+            <span className="text-bg-primary font-bold text-[11px]">AK</span>
           </div>
           {!collapsed && (
             <span className="text-[16px] font-bold text-text-primary whitespace-nowrap">
-              BLOSAFE
+              Alpha K
             </span>
           )}
         </Link>
-        {/* Mobile close */}
         {mobileOpen && (
           <button
             onClick={closeMobile}
@@ -122,75 +121,60 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* ── Create Alert ── */}
-      <div className="px-3 mt-4 mb-2 shrink-0">
-        <Link href="/alerts/new">
-          {collapsed ? (
-            <Button
-              size="sm"
-              className="w-full justify-center px-0"
-              aria-label="Create Alert Rule"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button size="sm" className="w-full">
-              <Plus className="w-4 h-4" />
-              New Alert Rule
-            </Button>
-          )}
-        </Link>
-      </div>
-
       {/* ── Main nav ── */}
-      <nav className="flex-1 overflow-y-auto px-2 mt-1" aria-label="Main navigation">
-        <NavSection items={mainNav} collapsed={collapsed} pathname={pathname} />
+      <nav className="flex-1 overflow-y-auto px-2 mt-3" aria-label="Main navigation">
+        {/* HOT section */}
+        {!collapsed && (
+          <span className="block mb-1.5 px-2 text-[10px] font-bold uppercase tracking-widest text-amber-400">
+            HOT 🔥
+          </span>
+        )}
+        <HotSection items={HOT_MENU} collapsed={collapsed} pathname={pathname} />
 
-        {/* Divider + section label */}
-        <div className="my-3 px-1">
-          <div className="border-t border-border-default" />
-          {!collapsed && (
-            <span className="block mt-3 mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-text-disabled">
-              Monitoring
-            </span>
-          )}
-        </div>
+        {/* Divider */}
+        <div className="my-3 mx-2 border-t border-zinc-700/50" />
 
-        <NavSection items={monitorNav} collapsed={collapsed} pathname={pathname} />
+        {/* INTELLIGENCE section */}
+        {!collapsed && (
+          <span className="block mb-1.5 px-2 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+            INTELLIGENCE
+          </span>
+        )}
+        <IntelligenceSection items={INTELLIGENCE_MENU} collapsed={collapsed} pathname={pathname} />
       </nav>
 
       {/* ── Bottom ── */}
-      <div className="px-2 pb-2 space-y-0.5 shrink-0 border-t border-border-default pt-2">
-        <NavSection items={bottomNav} collapsed={collapsed} pathname={pathname} />
+      <div className="px-2 pb-2 shrink-0 border-t border-border-default pt-2 space-y-0.5">
+        <BottomSection
+          items={BOTTOM_MENU}
+          collapsed={collapsed}
+          pathname={pathname}
+          tierLabel={tierLabel}
+        />
 
-        {/* ── User profile ── */}
-        <div
-          className={cn(
-            "flex items-center gap-2.5 mt-2 p-2 rounded-[6px] hover:bg-bg-secondary transition-colors cursor-pointer",
-            collapsed && "justify-center"
-          )}
-        >
-          <div className="w-8 h-8 rounded-full bg-accent-secondary/20 flex items-center justify-center shrink-0">
-            <span className="text-[12px] font-bold text-accent-secondary">{initials}</span>
+        {/* User profile or Sign In */}
+        {user ? (
+          <UserMenu collapsed={collapsed} />
+        ) : (
+          <div className="mt-2 px-1">
+            <Link
+              href="/login"
+              className={cn(
+                "flex items-center gap-2.5 w-full p-2 rounded-md text-text-secondary hover:bg-white/5 hover:text-text-primary transition-colors",
+                collapsed && "justify-center"
+              )}
+            >
+              <LogIn className="w-4 h-4" />
+              {!collapsed && <span className="text-[13px]">로그인</span>}
+            </Link>
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium text-text-primary truncate">
-                {user?.displayName ?? "Guest"}
-              </p>
-              <p className="text-[11px] text-signal-success flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-signal-success inline-block" />
-                {tierLabel}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
 
-        {/* ── Collapse toggle (desktop only) ── */}
+        {/* Collapse toggle (desktop only) */}
         <button
           onClick={toggle}
           className={cn(
-            "hidden md:flex items-center gap-3 h-9 rounded-[6px] transition-colors w-full text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
+            "hidden md:flex items-center gap-3 h-9 rounded-md transition-colors w-full text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
             collapsed ? "justify-center px-0" : "px-3"
           )}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -213,7 +197,7 @@ export function Sidebar() {
       {/* ── Desktop / Tablet sidebar ── */}
       <aside
         className={cn(
-          "hidden md:flex flex-col h-screen bg-bg-primary border-r border-border-default transition-[width] duration-200 shrink-0",
+          "hidden md:flex flex-col h-full bg-bg-primary border-r border-border-default transition-[width] duration-200 shrink-0",
           collapsed ? "w-[64px]" : "w-[240px]"
         )}
       >
@@ -223,14 +207,12 @@ export function Sidebar() {
       {/* ── Mobile overlay ── */}
       {mobileOpen && (
         <>
-          {/* Backdrop */}
           <div
             className="md:hidden fixed inset-0 z-40 bg-black/60"
             onClick={closeMobile}
             aria-hidden="true"
           />
-          {/* Drawer */}
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-bg-primary border-r border-border-default animate-in slide-in-from-left duration-200">
+          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-70 flex flex-col bg-bg-primary border-r border-border-default animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </>
@@ -239,8 +221,8 @@ export function Sidebar() {
   );
 }
 
-/* ── Nav section helper ── */
-function NavSection({
+/* ── HOT section items ── */
+function HotSection({
   items,
   collapsed,
   pathname,
@@ -262,23 +244,18 @@ function NavSection({
             key={item.href}
             href={item.href}
             className={cn(
-              "group flex items-center gap-3 h-10 rounded-[6px] transition-colors relative",
-              collapsed ? "justify-center px-0" : "px-3",
+              "group flex items-center gap-3 h-11 rounded-md transition-colors relative",
+              collapsed ? "justify-center px-0" : "pl-4 pr-3",
               isActive
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+                ? "bg-amber-500/15 text-amber-300 border-l-2 border-amber-400"
+                : "text-zinc-100 hover:bg-amber-500/10"
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            {/* Active gold left bar */}
-            {isActive && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r bg-accent-primary" />
-            )}
-
             <item.icon
               className={cn(
                 "w-5 h-5 shrink-0 transition-colors",
-                isActive ? "text-text-primary" : "text-text-secondary group-hover:text-text-primary"
+                isActive ? "text-amber-300" : "text-zinc-100 group-hover:text-amber-200"
               )}
             />
 
@@ -288,14 +265,130 @@ function NavSection({
               </span>
             )}
 
-            {/* Badge */}
-            {!collapsed && item.badge !== undefined && item.badge > 0 && (
-              <span className="ml-auto bg-accent-primary text-bg-primary text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+            {!collapsed && item.badge && (
+              <span className="ml-auto bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                 {item.badge}
               </span>
             )}
-            {collapsed && item.badge !== undefined && item.badge > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent-primary rounded-full" />
+
+            {collapsed && item.badge && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-400 rounded-full" />
+            )}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── INTELLIGENCE section items ── */
+function IntelligenceSection({
+  items,
+  collapsed,
+  pathname,
+}: {
+  items: NavItem[];
+  collapsed: boolean;
+  pathname: string;
+}) {
+  return (
+    <div className="space-y-0.5">
+      {items.map((item) => {
+        const isActive = pathname.startsWith(item.href);
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "group flex items-center gap-3 h-10 rounded-md transition-colors relative",
+              collapsed ? "justify-center px-0" : "pl-6 pr-3",
+              isActive
+                ? "bg-white/10 text-zinc-100"
+                : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100"
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            {isActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-4 rounded-r bg-zinc-400" />
+            )}
+
+            <item.icon
+              className={cn(
+                "w-4 h-4 shrink-0 transition-colors",
+                isActive ? "text-zinc-100" : "text-zinc-400 group-hover:text-zinc-200"
+              )}
+            />
+
+            {!collapsed && (
+              <span className="flex-1 text-[14px] font-normal truncate">
+                {item.label}
+              </span>
+            )}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Bottom section items ── */
+function BottomSection({
+  items,
+  collapsed,
+  pathname,
+  tierLabel,
+}: {
+  items: NavItem[];
+  collapsed: boolean;
+  pathname: string;
+  tierLabel: string;
+}) {
+  return (
+    <div className="space-y-0.5">
+      {items.map((item) => {
+        const isActive = pathname.startsWith(item.href);
+        const showTierTag = item.href === "/billing" && tierLabel;
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "group flex items-center gap-3 h-10 rounded-md transition-colors relative",
+              collapsed ? "justify-center px-0" : "px-3",
+              isActive
+                ? "bg-bg-secondary text-text-primary"
+                : "text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <item.icon
+              className={cn(
+                "w-4 h-4 shrink-0 transition-colors",
+                isActive ? "text-text-primary" : "text-text-secondary group-hover:text-text-primary"
+              )}
+            />
+
+            {!collapsed && (
+              <span className="flex-1 text-[13px] font-normal truncate">
+                {item.label}
+              </span>
+            )}
+
+            {!collapsed && showTierTag && (
+              <span
+                className={cn(
+                  "ml-auto text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+                  tierLabel === "WHALE"
+                    ? "bg-accent-secondary/15 text-accent-secondary"
+                    : tierLabel === "PRO"
+                      ? "bg-accent-primary/15 text-accent-primary"
+                      : "bg-zinc-700/50 text-zinc-500"
+                )}
+              >
+                {tierLabel}
+              </span>
             )}
           </Link>
         );

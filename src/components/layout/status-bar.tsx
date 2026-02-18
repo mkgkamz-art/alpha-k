@@ -15,7 +15,10 @@ export interface StatusBarProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const StatusBar = forwardRef<HTMLDivElement, StatusBarProps>(
-  ({ items, className, ...props }, ref) => (
+  ({ items, className, ...props }, ref) => {
+    if (items.length === 0) return null;
+
+    return (
     <div
       ref={ref}
       className={cn(
@@ -47,6 +50,7 @@ export const StatusBar = forwardRef<HTMLDivElement, StatusBarProps>(
         </div>
       ))}
     </div>
-  )
+    );
+  }
 );
 StatusBar.displayName = "StatusBar";
