@@ -1,4 +1,7 @@
 {
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
   "crons": [
     { "path": "/api/cron/fetch-korean-prices", "schedule": "* * * * *" },
     { "path": "/api/cron/fetch-prices", "schedule": "* * * * *" },
@@ -27,9 +30,5 @@
     { "path": "/api/cron/radar-cleanup", "schedule": "0 3 * * *" },
     { "path": "/api/cron/whale-discovery", "schedule": "0 4 * * *" },
     { "path": "/api/cron/whale-hot-digest", "schedule": "0 0 * * *" }
-  ],
-  "functions": {
-    "api/cron/**": { "maxDuration": 30 },
-    "api/**": { "maxDuration": 15 }
-  }
+  ]
 }

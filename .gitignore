@@ -48,3 +48,6 @@ next-env.d.ts
 # misc build artifacts
 build_output.txt
 nul
+
+.vercel
+.env*.local

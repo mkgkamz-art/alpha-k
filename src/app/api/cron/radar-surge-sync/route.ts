@@ -32,18 +32,25 @@ export async function GET(req: NextRequest) {
       .order("fetched_at", { ascending: false });
 
     if (prices && prices.length > 0) {
-      // Deduplicate by symbol (latest first)
-      const seen = new Set<string>();
-      const unique = prices.filter((p) => {
-        const key = `${p.symbol}-${p.exchange}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      // Deduplicate by symbol across exchanges — keep highest |change|
+      const bestBySymbol = new Map<
+        string,
+        (typeof prices)[number]
+      >();
+      for (const p of prices) {
+        const existing = bestBySymbol.get(p.symbol);
+        if (
+          !existing ||
+          Math.abs(p.change_24h ?? 0) > Math.abs(existing.change_24h ?? 0)
+        ) {
+          bestBySymbol.set(p.symbol, p);
+        }
+      }
+      const unique = Array.from(bestBySymbol.values());
 
-      // Filter for significant moves (>= 5% change)
+      // Filter for significant moves (>= 10% change)
       const surges = unique.filter(
-        (p) => p.change_24h != null && Math.abs(p.change_24h) >= 5,
+        (p) => p.change_24h != null && Math.abs(p.change_24h) >= 10,
       );
 
       for (const s of surges) {
