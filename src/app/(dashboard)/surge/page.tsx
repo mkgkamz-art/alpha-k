@@ -100,7 +100,7 @@ export default function SurgePage() {
               급등 레이더
             </h1>
             <p className="text-sm text-text-secondary mt-0.5">
-              업비트/빗썸 실시간 급등·급락 코인
+              업비트/빗썸 2시간 기준 급등·급락 코인
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-text-secondary">
@@ -234,7 +234,7 @@ function SurgeTable({ items }: { items: SurgeItem[] }) {
         <span>#</span>
         <span>코인</span>
         <span className="text-right">현재가</span>
-        <span className="text-right">변동률</span>
+        <span className="text-right">2h 변동</span>
         <span className="text-right">거래대금</span>
         <span className="text-right">김프</span>
       </div>
@@ -301,7 +301,7 @@ const SurgeRow = memo(function SurgeRow({
           )}
         >
           {isPump ? "+" : ""}
-          {item.change_24h.toFixed(1)}%
+          {item.change_pct.toFixed(1)}%
         </span>
 
         {/* Volume */}
@@ -494,7 +494,7 @@ const SurgeCardMobile = memo(function SurgeCardMobile({
             )}
           >
             {isPump ? "+" : ""}
-            {item.change_24h.toFixed(1)}%
+            {item.change_pct.toFixed(1)}%
           </span>
         </div>
 

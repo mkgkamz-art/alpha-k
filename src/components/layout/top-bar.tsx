@@ -6,43 +6,34 @@ import Image from "next/image";
 import {
   Bell,
   Search,
-  Menu,
-  ChevronRight,
   Wifi,
   WifiOff,
   LogIn,
+  Settings,
+  Gem,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSidebarStore } from "@/stores/sidebar-store";
 import { useAuthStore } from "@/stores/auth-store";
 
 /* ── Route → title + breadcrumbs ── */
-const routeMeta: Record<
-  string,
-  { title: string; breadcrumb?: { label: string; href: string }[] }
-> = {
-  "/dashboard": { title: "라이브 피드" },
-  "/surge": { title: "급등 레이더" },
-  "/kimchi": { title: "김치프리미엄" },
-  "/listing": { title: "상장 알림" },
-  "/whale": { title: "고래 추적" },
-  "/signals": { title: "시그널" },
-  "/risk": { title: "DeFi 리스크" },
-  "/unlocks": { title: "토큰 언락" },
-  "/liquidity": { title: "유동성" },
-  "/watchlist": { title: "워치리스트" },
-  "/alerts": { title: "알림 규칙" },
-  "/alerts/new": {
-    title: "새 알림 규칙",
-    breadcrumb: [{ label: "알림", href: "/alerts" }],
-  },
-  "/settings": { title: "설정" },
-  "/billing": { title: "구독 관리" },
-  "/more": { title: "더보기" },
+const routeTitles: Record<string, string> = {
+  "/radar": "레이더",
+  "/whale": "고래 추적",
+  "/chirashi": "찌라시",
+  "/settings": "설정",
+  "/billing": "구독 관리",
+  "/watchlist": "워치리스트",
+  "/alerts": "알림 규칙",
+  "/alerts/new": "새 알림 규칙",
+  "/risk": "DeFi 리스크",
+  "/unlocks": "토큰 언락",
+  "/liquidity": "유동성",
 };
 
-function getRouteMeta(pathname: string) {
-  return routeMeta[pathname] ?? { title: pathname.split("/").pop() ?? "Page" };
+function getRouteTitle(pathname: string): string {
+  if (pathname.startsWith("/whale/") && pathname !== "/whale") return "고래 상세";
+  return routeTitles[pathname] ?? pathname.split("/").pop() ?? "Page";
 }
 
 export interface TopBarProps {
@@ -52,9 +43,8 @@ export interface TopBarProps {
 
 export function TopBar({ unreadCount = 3, connected = true }: TopBarProps) {
   const pathname = usePathname();
-  const openMobile = useSidebarStore((s) => s.openMobile);
   const user = useAuthStore((s) => s.user);
-  const meta = getRouteMeta(pathname);
+  const title = getRouteTitle(pathname);
 
   const initials = user?.displayName
     ? user.displayName
@@ -72,37 +62,10 @@ export function TopBar({ unreadCount = 3, connected = true }: TopBarProps) {
       className="sticky top-0 z-20 flex items-center justify-between h-14 px-4 md:px-6 border-b border-border-default bg-bg-primary/95 backdrop-blur-sm"
       role="banner"
     >
-      {/* Left: hamburger + breadcrumb + title */}
+      {/* Left: title */}
       <div className="flex items-center gap-3 min-w-0">
-        <button
-          onClick={openMobile}
-          className="md:hidden flex items-center justify-center w-9 h-9 -ml-1 rounded-md text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
-        {meta.breadcrumb && meta.breadcrumb.length > 0 && (
-          <nav
-            aria-label="Breadcrumb"
-            className="hidden md:flex items-center gap-1 text-[13px]"
-          >
-            {meta.breadcrumb.map((crumb) => (
-              <span key={crumb.href} className="flex items-center gap-1">
-                <Link
-                  href={crumb.href}
-                  className="text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  {crumb.label}
-                </Link>
-                <ChevronRight className="w-3.5 h-3.5 text-text-disabled" />
-              </span>
-            ))}
-          </nav>
-        )}
-
         <h1 className="text-[16px] font-semibold text-text-primary truncate">
-          {meta.title}
+          {title}
         </h1>
       </div>
 
@@ -134,6 +97,34 @@ export function TopBar({ unreadCount = 3, connected = true }: TopBarProps) {
             ⌘K
           </kbd>
         </button>
+
+        {/* Quick links — desktop only */}
+        <div className="hidden md:flex items-center gap-0.5">
+          <Link
+            href="/watchlist"
+            className="flex items-center justify-center w-9 h-9 rounded-md text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
+            aria-label="워치리스트"
+            title="워치리스트"
+          >
+            <Star className="w-4.5 h-4.5" />
+          </Link>
+          <Link
+            href="/billing"
+            className="flex items-center justify-center w-9 h-9 rounded-md text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
+            aria-label="구독 관리"
+            title="구독 관리"
+          >
+            <Gem className="w-4.5 h-4.5" />
+          </Link>
+          <Link
+            href="/settings"
+            className="flex items-center justify-center w-9 h-9 rounded-md text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
+            aria-label="설정"
+            title="설정"
+          >
+            <Settings className="w-4.5 h-4.5" />
+          </Link>
+        </div>
 
         {/* Notification bell — only for authenticated users */}
         {user && (

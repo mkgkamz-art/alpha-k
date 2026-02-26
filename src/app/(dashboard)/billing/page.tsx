@@ -55,7 +55,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "무료 체험이 있나요?",
-    a: "Free 플랜은 기간 제한 없이 사용 가능합니다. Pro와 Whale 플랜은 7일 무료 체험이 포함되어 모든 기능을 먼저 평가할 수 있습니다.",
+    a: "Pro와 Whale 플랜은 1개월 무료 체험이 포함됩니다. 체험 시작 시 결제 정보를 입력하시면, 첫 달은 무료로 모든 기능을 이용할 수 있습니다. 2개월째부터 자동 결제되며, 체험 기간 중 언제든 해지하면 비용이 발생하지 않습니다.",
   },
   {
     q: "언제든 해지할 수 있나요?",
@@ -117,9 +117,10 @@ function BillingContent() {
 
   const user = useAuthStore((s) => s.user);
   const tier = useAuthStore((s) => s.tier);
+  const isOnTrial = useAuthStore((s) => s.isOnTrial);
   const isPaid = tier === "pro" || tier === "whale";
 
-  const { subscription, cancelSubscription, refetch } = useSubscription(!!user && isPaid);
+  const { subscription, cancelSubscription, refetch } = useSubscription(!!user);
 
   /* ── Dynamic page title ── */
   useEffect(() => {
@@ -130,7 +131,7 @@ function BillingContent() {
   useEffect(() => {
     if (searchParams.get("success") !== "true") return;
 
-    setToast({ variant: "success", message: "구독이 활성화되었습니다! 환영합니다." });
+    setToast({ variant: "success", message: "무료 체험이 시작되었습니다! 30일간 모든 기능을 이용해보세요." });
 
     // Remove ?success=true from URL
     router.replace("/billing", { scroll: false });
@@ -213,9 +214,11 @@ function BillingContent() {
 
   const getCtaState = (targetTier: "pro" | "whale") => {
     if (!user) return { label: "시작하기", disabled: false };
+    if (tier === targetTier && isOnTrial) return { label: "체험 중", disabled: true };
     if (tier === targetTier) return { label: "현재 플랜", disabled: true };
     if (tier === "whale" && targetTier === "pro") return { label: "현재: Whale", disabled: true };
-    return { label: targetTier === "pro" ? "Pro 업그레이드" : "Whale 업그레이드", disabled: false };
+    if (isPaid) return { label: "플랜 변경", disabled: false };
+    return { label: "1개월 무료 체험 시작", disabled: false };
   };
 
   const proCta = getCtaState("pro");
@@ -225,8 +228,64 @@ function BillingContent() {
     <div className="flex flex-col h-full overflow-y-auto">
       <div className="p-4 md:p-6 flex flex-col gap-10 max-w-[1100px] w-full mx-auto">
 
+        {/* ══ A) Trial Active Banner ══ */}
+        {isOnTrial && subscription && (
+          <div className="rounded-xl border border-accent-primary/30 bg-bg-secondary p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <Zap className="w-5 h-5 text-accent-primary shrink-0 mt-0.5" />
+                <div>
+                  <h2 className="text-lg font-bold text-text-primary">
+                    무료 체험 중
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    모든 {tier === "whale" ? "Whale" : "Pro"} 기능을 무료로 체험하고 있습니다. 체험 중 해지하면 비용이 발생하지 않습니다.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary text-sm font-bold font-num tabular-nums">
+                  D-{subscription.daysLeftInTrial}
+                </span>
+                {subscription.trialEndsAt && (
+                  <span className="text-xs text-text-disabled">
+                    {formatDate(subscription.trialEndsAt)} 종료
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ B) Trial Invitation Banner (free user, not on trial) ══ */}
+        {!isPaid && !isOnTrial && (
+          <div className="rounded-xl border border-accent-secondary/30 bg-bg-secondary p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <Zap className="w-5 h-5 text-accent-secondary shrink-0 mt-0.5" />
+                <div>
+                  <h2 className="text-lg font-bold text-text-primary">
+                    Pro 기능을 1개월 무료로 체험해보세요
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    결제 정보 등록 후 30일간 무료 — 체험 중 해지하면 비용 없음
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => pricingRef.current?.scrollIntoView({ behavior: "smooth" })}
+                className="shrink-0"
+              >
+                플랜 보기
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* ══ Subscription Management Card ══ */}
-        {user && isPaid && (
+        {user && isPaid && !isOnTrial && (
           <SubscriptionCard
             subscription={subscription}
             tier={tier!}
@@ -296,6 +355,11 @@ function BillingContent() {
                 {formatKRW(proPrice)}
               </span>
               <span className="text-[14px] text-text-secondary">{period}</span>
+              {!isPaid && (
+                <span className="text-[12px] text-accent-secondary font-medium ml-1.5">
+                  첫 달 무료
+                </span>
+              )}
             </div>
 
             <p className="text-[13px] text-text-secondary mt-2">
@@ -337,6 +401,11 @@ function BillingContent() {
                 {formatKRW(whalePrice)}
               </span>
               <span className="text-[14px] text-text-secondary">{period}</span>
+              {!isPaid && (
+                <span className="text-[12px] text-accent-secondary font-medium ml-1.5">
+                  첫 달 무료
+                </span>
+              )}
             </div>
 
             <p className="text-[13px] text-text-secondary mt-2">
@@ -474,8 +543,9 @@ function SubscriptionCard({
   const badgeBg = isWhale ? "bg-accent-secondary/15 text-accent-secondary" : "bg-accent-primary/15 text-accent-primary";
 
   const isCancelled = subscription?.cancelled;
-  const statusLabel = isCancelled ? "해지 예정" : "활성";
-  const statusColor = isCancelled ? "text-signal-warning" : "text-signal-success";
+  const isTrialing = subscription?.isOnTrial;
+  const statusLabel = isCancelled ? "해지 예정" : isTrialing ? "체험 중" : "활성";
+  const statusColor = isCancelled ? "text-signal-warning" : isTrialing ? "text-accent-primary" : "text-signal-success";
 
   const amount = subscription?.amount;
   const intervalLabel = subscription?.interval === "yearly" ? "/년" : "/월";
@@ -508,6 +578,11 @@ function SubscriptionCard({
               {isCancelled && subscription?.endsAt && (
                 <span className="text-text-disabled text-xs">
                   — {formatDate(subscription.endsAt)} 만료
+                </span>
+              )}
+              {isTrialing && subscription?.daysLeftInTrial != null && (
+                <span className="text-text-disabled text-xs">
+                  — D-{subscription.daysLeftInTrial}
                 </span>
               )}
             </div>

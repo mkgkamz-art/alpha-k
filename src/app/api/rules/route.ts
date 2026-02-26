@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (profile?.subscription_tier === "free") {
+  if ((profile?.subscription_tier ?? "free") === "free") {
     const { count } = await supabase
       .from("alert_rules")
       .select("*", { count: "exact", head: true })

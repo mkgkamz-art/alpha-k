@@ -1,8 +1,8 @@
 /**
  * Surge detection algorithm for Korean exchange price data.
  *
- * Uses korean_prices / latest_korean_prices to find coins with
- * significant 24h change (±5% threshold).
+ * Uses korean_prices to find coins with significant 2-hour
+ * price change (±5% threshold).
  */
 
 /* ── Surge level classification ── */
@@ -16,7 +16,8 @@ export interface SurgeItem {
   price_krw: number;
   price_usd: number | null;
   volume_24h: number | null;
-  change_24h: number;
+  /** 2-hour price change percentage */
+  change_pct: number;
   kimchi_premium: number | null;
   fetched_at: string;
   level: SurgeLevel;
@@ -38,3 +39,4 @@ export function getSurgeType(change: number): SurgeType {
 /* ── Constants ── */
 
 export const SURGE_THRESHOLD = 5; // minimum ±5% to be considered a surge
+export const SURGE_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours

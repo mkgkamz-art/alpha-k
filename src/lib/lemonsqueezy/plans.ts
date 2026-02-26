@@ -21,6 +21,7 @@ export interface Plan {
   highlighted?: boolean;
   highlightLabel?: string;
   ctaLabel: string;
+  trialDays?: number;
 }
 
 export const PLANS: Plan[] = [
@@ -65,6 +66,7 @@ export const PLANS: Plan[] = [
     highlighted: true,
     highlightLabel: "인기",
     ctaLabel: "Pro 시작하기",
+    trialDays: 30,
   },
   {
     tier: "whale",
@@ -88,6 +90,7 @@ export const PLANS: Plan[] = [
       { label: "커스텀 웹훅", included: true },
     ],
     ctaLabel: "Whale 시작하기",
+    trialDays: 30,
   },
 ];
 

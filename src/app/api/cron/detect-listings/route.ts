@@ -1,11 +1,16 @@
 /**
  * Cron: Detect new exchange listings (every 5 minutes)
  *
- * 1. Load existing market codes from exchange_listed_coins
- * 2. Fetch current Upbit/Bithumb market lists
- * 3. Compare → detect new listings
- * 4. Insert into new_listings + update exchange_listed_coins
- * 5. Update prices for existing new_listings (within 7 days)
+ * BASELINE MODE (first run / exchange_listed_coins < 10 rows):
+ *   - Register all current coins as baseline
+ *   - Do NOT create new_listings entries (these are existing coins)
+ *
+ * DETECTION MODE (subsequent runs):
+ *   1. Load existing market codes from exchange_listed_coins
+ *   2. Fetch current Upbit/Bithumb market lists
+ *   3. Compare → detect genuinely new listings
+ *   4. Insert into new_listings + update exchange_listed_coins
+ *   5. Update prices for existing new_listings (within 7 days)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -18,6 +23,7 @@ import {
   type UpbitMarket,
 } from "@/lib/exchanges";
 import { createListingContext, saveContextAlert } from "@/lib/context-engine";
+import { detectListings } from "@/lib/detectors/listing-detector";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +36,9 @@ export async function GET(req: NextRequest) {
     const supabase = createAdminClient();
 
     // 1. Load existing market codes
-    const { data: existingCoins } = await supabase
+    const { data: existingCoins, count: existingCount } = await supabase
       .from("exchange_listed_coins")
-      .select("exchange, market_code");
+      .select("exchange, market_code", { count: "exact" });
 
     const existingSet = new Set(
       existingCoins?.map((c) => `${c.exchange}:${c.market_code}`) ?? []
@@ -42,12 +48,57 @@ export async function GET(req: NextRequest) {
     const upbitMarkets = await getUpbitMarkets();
     const bithumbTickers = await getBithumbTickers();
 
-    // Build upbit name map for coin_name lookup
-    const upbitNameMap = new Map<string, string>();
-    for (const m of upbitMarkets) {
-      upbitNameMap.set(m.market, m.korean_name);
+    // ── BASELINE MODE ──
+    // If exchange_listed_coins is empty or very small, this is the first run.
+    // Register all current coins as baseline WITHOUT creating new_listings.
+    const isBaseline = (existingCount ?? 0) < 10;
+
+    if (isBaseline) {
+      console.log(
+        `[cron/detect-listings] Baseline mode: registering ${upbitMarkets.length} Upbit + ${bithumbTickers.length} Bithumb coins`
+      );
+
+      // Batch upsert all Upbit markets
+      const upbitRows = upbitMarkets.map((m) => ({
+        exchange: "upbit" as const,
+        symbol: m.market.replace("KRW-", ""),
+        market_code: m.market,
+        is_new: false,
+      }));
+      for (let i = 0; i < upbitRows.length; i += 100) {
+        await supabase
+          .from("exchange_listed_coins")
+          .upsert(upbitRows.slice(i, i + 100), {
+            onConflict: "exchange,market_code",
+          });
+      }
+
+      // Batch upsert all Bithumb markets
+      const bithumbRows = bithumbTickers.map((t) => ({
+        exchange: "bithumb" as const,
+        symbol: t.symbol,
+        market_code: `${t.symbol}_KRW`,
+        is_new: false,
+      }));
+      for (let i = 0; i < bithumbRows.length; i += 100) {
+        await supabase
+          .from("exchange_listed_coins")
+          .upsert(bithumbRows.slice(i, i + 100), {
+            onConflict: "exchange,market_code",
+          });
+      }
+
+      const duration = Date.now() - started;
+      return NextResponse.json({
+        success: true,
+        baseline: true,
+        registered: upbitRows.length + bithumbRows.length,
+        newListings: 0,
+        duration,
+      });
     }
 
+    // ── DETECTION MODE ── (normal operation after baseline)
     // 3. Detect new listings
     const newUpbit = upbitMarkets.filter(
       (m) => !existingSet.has(`upbit:${m.market}`)
@@ -66,9 +117,8 @@ export async function GET(req: NextRequest) {
 
     // 4. Process new Upbit listings
     if (newUpbit.length > 0) {
-      // Fetch prices for new upbit coins
       const newUpbitCodes = newUpbit.map((m) => m.market);
-      let upbitPrices = new Map<string, number>();
+      const upbitPrices = new Map<string, number>();
       try {
         const tickers = await getUpbitTickers(newUpbitCodes);
         for (const t of tickers) {
@@ -82,18 +132,17 @@ export async function GET(req: NextRequest) {
         const symbol = market.market.replace("KRW-", "");
         const price = upbitPrices.get(market.market) ?? null;
 
-        const listing = {
-          exchange: "upbit" as const,
-          symbol,
-          market_code: market.market,
-          coin_name: market.korean_name,
-          initial_price_krw: price,
-          current_price_krw: price,
-        };
-
-        await supabase
-          .from("new_listings")
-          .upsert(listing, { onConflict: "exchange,market_code" });
+        await supabase.from("new_listings").upsert(
+          {
+            exchange: "upbit" as const,
+            symbol,
+            market_code: market.market,
+            coin_name: market.korean_name,
+            initial_price_krw: price,
+            current_price_krw: price,
+          },
+          { onConflict: "exchange,market_code" }
+        );
 
         await supabase.from("exchange_listed_coins").upsert(
           {
@@ -113,27 +162,29 @@ export async function GET(req: NextRequest) {
           initial_price_krw: price,
         });
 
-        // Context Alert
         await saveContextAlert(
-          createListingContext({ symbol, exchange: "upbit", coinName: market.korean_name })
+          createListingContext({
+            symbol,
+            exchange: "upbit",
+            coinName: market.korean_name,
+          })
         );
       }
     }
 
     // 5. Process new Bithumb listings
     for (const ticker of newBithumb) {
-      const listing = {
-        exchange: "bithumb" as const,
-        symbol: ticker.symbol,
-        market_code: `${ticker.symbol}_KRW`,
-        coin_name: null,
-        initial_price_krw: ticker.closing_price || null,
-        current_price_krw: ticker.closing_price || null,
-      };
-
-      await supabase
-        .from("new_listings")
-        .upsert(listing, { onConflict: "exchange,market_code" });
+      await supabase.from("new_listings").upsert(
+        {
+          exchange: "bithumb" as const,
+          symbol: ticker.symbol,
+          market_code: `${ticker.symbol}_KRW`,
+          coin_name: null,
+          initial_price_krw: ticker.closing_price || null,
+          current_price_krw: ticker.closing_price || null,
+        },
+        { onConflict: "exchange,market_code" }
+      );
 
       await supabase.from("exchange_listed_coins").upsert(
         {
@@ -153,23 +204,36 @@ export async function GET(req: NextRequest) {
         initial_price_krw: ticker.closing_price || null,
       });
 
-      // Context Alert
       await saveContextAlert(
-        createListingContext({ symbol: ticker.symbol, exchange: "bithumb", coinName: null })
+        createListingContext({
+          symbol: ticker.symbol,
+          exchange: "bithumb",
+          coinName: null,
+        })
       );
     }
 
     // 6. Update prices for recent listings (within 7 days)
     await updateRecentListingPrices(supabase, upbitMarkets, bithumbTickers);
 
+    // 7. ListingDetector — radar_signals에 상장 시그널 생성 (Binance 공지 포함)
+    let radarDetected = 0;
+    try {
+      const result = await detectListings(supabase);
+      radarDetected = result.detected;
+    } catch (err) {
+      console.warn("[cron/detect-listings] Radar listing detector error:", err);
+    }
+
     const duration = Date.now() - started;
     console.log(
-      `[cron/detect-listings] new: ${newListings.length}, duration: ${duration}ms`
+      `[cron/detect-listings] new: ${newListings.length}, radar: ${radarDetected}, duration: ${duration}ms`
     );
 
     return NextResponse.json({
       success: true,
       newListings: newListings.length,
+      radarDetected,
       details: newListings,
       duration,
     });
@@ -207,7 +271,7 @@ async function updateRecentListingPrices(
     .filter((l) => l.exchange === "upbit")
     .map((l) => l.market_code);
 
-  let upbitPriceMap = new Map<string, number>();
+  const upbitPriceMap = new Map<string, number>();
   if (upbitCodes.length > 0) {
     try {
       const tickers = await getUpbitTickers(upbitCodes);

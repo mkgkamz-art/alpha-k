@@ -13,6 +13,9 @@ export interface SubscriptionInfo {
   interval: "monthly" | "yearly" | null;
   customerPortalUrl: string | null;
   updatePaymentUrl: string | null;
+  isOnTrial: boolean;
+  trialEndsAt: string | null;
+  daysLeftInTrial: number;
 }
 
 export const subscriptionKeys = {

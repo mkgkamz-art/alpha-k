@@ -7,6 +7,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/types/database.types";
+import { calculateRadarScore, insertRadarSignal } from "@/lib/radar-scoring";
 
 /* ── Types ── */
 
@@ -65,8 +66,45 @@ export async function saveContextAlert(alert: ContextAlert): Promise<void> {
       source_data: alert.source_data as Json,
       related_page: alert.related_page,
     });
+
+    // Also insert into radar_signals
+    const radarType = mapContextToRadarType(alert.alert_type);
+    if (radarType) {
+      const { score, strength } = calculateRadarScore({
+        type: "context",
+        data: { severity: alert.severity },
+      });
+      await insertRadarSignal(supabase, {
+        signal_type: radarType,
+        token_symbol: alert.symbol ?? "MARKET",
+        score,
+        strength,
+        title: alert.what_title,
+        description: alert.what_description,
+        data_snapshot: alert.source_data as Record<string, unknown>,
+        source: `context/${alert.alert_type}`,
+      });
+    }
   } catch (err) {
     console.error("[context-engine] Failed to save alert:", err);
+  }
+}
+
+function mapContextToRadarType(
+  alertType: ContextAlertType,
+): "surge" | "kimchi" | "listing" | "signal" | "context" | null {
+  switch (alertType) {
+    case "surge":
+    case "dump":
+      return "surge";
+    case "kimchi":
+      return "kimchi";
+    case "listing":
+      return "listing";
+    case "signal":
+      return "signal";
+    default:
+      return "context";
   }
 }
 
@@ -93,7 +131,7 @@ export function createSurgeContext(data: {
     symbol,
     severity,
     what_title: `${symbol} ${direction} ${Math.abs(change).toFixed(1)}% (${exName})`,
-    what_description: `${symbol}이(가) ${exName}에서 24시간 기준 ${Math.abs(change).toFixed(1)}% ${direction}. 거래대금 ${formatKRW(volume)}.`,
+    what_description: `${symbol}이(가) ${exName}에서 2시간 기준 ${Math.abs(change).toFixed(1)}% ${direction}. 거래대금 ${formatKRW(volume)}.`,
     why_analysis: generateSurgeWhy(change, volume, kimchi),
     action_suggestion: generateSurgeAction(change, kimchi),
     source_data: data,

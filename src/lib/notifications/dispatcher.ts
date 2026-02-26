@@ -13,7 +13,7 @@
  * 7. delivered_via updated
  */
 
-import type { AlertType, Severity, SubscriptionTier } from "@/types";
+import type { AlertType, Severity, SubscriptionTier, NotificationPreferences, NotificationAlertType } from "@/types";
 import { sendPush, type PushSubscription, type PushPayload } from "./push";
 import { sendAlertEmail, type AlertEmailData } from "./email";
 import { sendAlertSms } from "./sms";
@@ -57,6 +57,7 @@ export interface UserNotificationConfig {
   quietHoursEnd: string | null; // "HH:MM"
   timezone: string;
   maxAlertsPerHour: number;
+  notificationPreferences?: NotificationPreferences | null;
 }
 
 export interface DispatchResult {
@@ -147,6 +148,16 @@ function getAvailableChannels(
   return available;
 }
 
+/* ── Alert Type → Notification Preference Key ── */
+
+const ALERT_TO_NOTIF_KEY: Partial<Record<AlertType, NotificationAlertType>> = {
+  whale: "whale",
+  risk: "defi_risk",
+  price_signal: "trading_signal",
+  token_unlock: "trading_signal",
+  liquidity: "liquidity",
+};
+
 /* ── Main Dispatcher ── */
 
 export async function dispatchNotification(
@@ -212,7 +223,15 @@ export async function dispatchNotification(
     );
   }
 
-  // Telegram
+  // Telegram — check per-alert-type notification preferences
+  const notifKey = ALERT_TO_NOTIF_KEY[event.type];
+  if (notifKey && config.notificationPreferences) {
+    const pref = config.notificationPreferences[notifKey];
+    if (pref && !pref.telegram) {
+      channels.telegram = false;
+    }
+  }
+
   if (channels.telegram && config.telegramChatId) {
     const telegramData: TelegramAlertData = {
       type: event.type,

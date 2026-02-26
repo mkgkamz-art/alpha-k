@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Settings, LogOut, ChevronDown } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Gem, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore, type AuthUser } from "@/stores/auth-store";
 import { createClient } from "@/lib/supabase/client";
@@ -147,13 +147,31 @@ function UserDropdown({
       {/* Menu items */}
       <div className="py-1">
         <Link
+          href="/watchlist"
+          onClick={onClose}
+          className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
+          role="menuitem"
+        >
+          <Star className="w-4 h-4" />
+          워치리스트
+        </Link>
+        <Link
+          href="/billing"
+          onClick={onClose}
+          className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
+          role="menuitem"
+        >
+          <Gem className="w-4 h-4" />
+          구독 관리
+        </Link>
+        <Link
           href="/settings"
           onClick={onClose}
           className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
           role="menuitem"
         >
           <Settings className="w-4 h-4" />
-          Settings
+          설정
         </Link>
         <button
           onClick={handleLogout}

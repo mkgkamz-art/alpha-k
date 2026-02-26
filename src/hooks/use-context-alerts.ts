@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/types/database.types";
 
 export type ContextAlertRow = Tables<"context_alerts">;
@@ -11,26 +11,37 @@ export interface ContextAlertFilters {
   limit?: number;
 }
 
+export interface ContextAlertPage {
+  data: ContextAlertRow[];
+  count: number;
+  nextCursor: string | null;
+}
+
 export const contextAlertKeys = {
   all: ["context-alerts"] as const,
   list: (f: ContextAlertFilters) =>
-    ["context-alerts", f.type ?? "all", f.severity ?? "all", f.limit ?? 30] as const,
+    ["context-alerts", f.type ?? "all", f.severity ?? "all", f.limit ?? 20] as const,
   latest: ["context-alerts", "latest-critical"] as const,
 };
 
 export function useContextAlerts(filters: ContextAlertFilters = {}, interval = 30_000) {
-  return useQuery<{ data: ContextAlertRow[]; count: number }>({
+  const limit = filters.limit ?? 20;
+
+  return useInfiniteQuery<ContextAlertPage, Error, { pages: ContextAlertPage[]; pageParams: (string | null)[] }, readonly (string | number)[], string | null>({
     queryKey: contextAlertKeys.list(filters),
-    queryFn: async () => {
+    initialPageParam: null,
+    queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams();
       if (filters.type) params.set("type", filters.type);
       if (filters.severity) params.set("severity", filters.severity);
-      if (filters.limit) params.set("limit", String(filters.limit));
+      params.set("limit", String(limit));
+      if (pageParam) params.set("cursor", pageParam);
 
       const res = await fetch(`/api/context-alerts?${params}`);
       if (!res.ok) throw new Error("Failed to fetch context alerts");
       return res.json();
     },
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchInterval: interval,
     staleTime: 15_000,
   });

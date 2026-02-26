@@ -23,8 +23,25 @@ export async function createCheckoutUrl(options: {
   variantId: string;
   userEmail?: string;
   userId?: string;
+  trialDays?: number;
 }): Promise<{ url: string }> {
   configureLemonSqueezy();
+
+  // Calculate trial end date when trialDays is provided
+  const trialEndsAt = options.trialDays
+    ? new Date(Date.now() + options.trialDays * 24 * 60 * 60 * 1000).toISOString()
+    : undefined;
+
+  // LS REST API supports checkout_data.trial_ends_at but SDK types omit it
+  const checkoutData: Record<string, unknown> = {
+    email: options.userEmail ?? undefined,
+    custom: {
+      user_id: options.userId ?? "",
+    },
+  };
+  if (trialEndsAt) {
+    checkoutData.trialEndsAt = trialEndsAt;
+  }
 
   const res = await createCheckout(getStoreId(), options.variantId, {
     checkoutOptions: {
@@ -32,12 +49,8 @@ export async function createCheckoutUrl(options: {
       media: false,
       dark: true,
     },
-    checkoutData: {
-      email: options.userEmail ?? undefined,
-      custom: {
-        user_id: options.userId ?? "",
-      },
-    },
+    checkoutData: checkoutData as Parameters<typeof createCheckout>[2] extends
+      { checkoutData?: infer D } ? D : never,
     productOptions: {
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/billing?success=true`,
     },

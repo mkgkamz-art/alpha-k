@@ -76,8 +76,8 @@ export function SurgeSideWidget() {
                     isPump ? "text-signal-success" : "text-signal-danger"
                   )}
                 >
-                  {item.change_24h >= 0 ? "+" : ""}
-                  {formatPercentage(item.change_24h)}
+                  {item.change_pct >= 0 ? "+" : ""}
+                  {formatPercentage(item.change_pct)}
                 </span>
               </div>
             );

@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { SubscriptionTier } from "@/types";
 
 const VALID_TIMEFRAMES = new Set<string>(["4H", "1D", "1W"]);
 const VALID_TYPES = new Set<string>(["buy", "sell", "alert"]);
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
         .eq("id", user.id)
         .single();
 
-      tier = profile?.subscription_tier ?? "free";
+      tier = (profile?.subscription_tier ?? "free") as SubscriptionTier;
 
       if (tier === "free") {
         return NextResponse.json({

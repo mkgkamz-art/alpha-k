@@ -78,3 +78,50 @@ export async function getUpbitTickers(
 
   return results;
 }
+
+/* ── Orderbook Types ── */
+
+export interface UpbitOrderbookUnit {
+  ask_price: number;
+  bid_price: number;
+  ask_size: number;
+  bid_size: number;
+}
+
+export interface UpbitOrderbook {
+  market: string;
+  orderbook_units: UpbitOrderbookUnit[];
+  total_ask_size: number;
+  total_bid_size: number;
+}
+
+/**
+ * Fetch orderbook for given markets (max 10 per request).
+ * 호가 정보: 상/하 15호가.
+ */
+export async function getUpbitOrderbook(
+  markets: string[],
+): Promise<UpbitOrderbook[]> {
+  const chunks = chunkArray(markets, 10);
+  const results: UpbitOrderbook[] = [];
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const res = await fetch(
+      `${UPBIT_API}/orderbook?markets=${chunk.join(",")}`,
+      {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
+
+    if (!res.ok) throw new Error(`Upbit orderbook HTTP ${res.status}`);
+
+    const data: UpbitOrderbook[] = await res.json();
+    results.push(...data);
+
+    if (i < chunks.length - 1) await sleep(150);
+  }
+
+  return results;
+}

@@ -6,20 +6,23 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatNumber(value: number, decimals = 2): string {
-  if (value >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(decimals)}B`;
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1_000_000_000) {
+    return `${sign}${(abs / 1_000_000_000).toFixed(decimals)}B`;
   }
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(decimals)}M`;
+  if (abs >= 1_000_000) {
+    return `${sign}${(abs / 1_000_000).toFixed(decimals)}M`;
   }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(decimals)}K`;
+  if (abs >= 1_000) {
+    return `${sign}${(abs / 1_000).toFixed(decimals)}K`;
   }
   return value.toFixed(decimals);
 }
 
 export function formatCurrency(value: number, decimals = 2): string {
-  return `$${formatNumber(value, decimals)}`;
+  const sign = value < 0 ? "-" : "";
+  return `${sign}$${formatNumber(Math.abs(value), decimals)}`;
 }
 
 export function formatPercentage(value: number, decimals = 2): string {

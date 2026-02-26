@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { SubscriptionTier } from "@/types";
 
 const VALID_TIMEFRAMES = new Set(["4H", "1D", "1W"]);
 const VALID_TYPES = new Set(["buy", "sell", "alert"]);
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
         .eq("id", user.id)
         .single();
 
-      tier = profile?.subscription_tier ?? "free";
+      tier = (profile?.subscription_tier ?? "free") as SubscriptionTier;
       if (tier === "free") {
         return NextResponse.json({
           signals: [],
@@ -79,8 +80,17 @@ export async function GET(req: NextRequest) {
     if (signalsRes.error) throw signalsRes.error;
     if (pricesRes.error) throw pricesRes.error;
 
-    const allSignals = signalsRes.data ?? [];
+    const rawSignals = signalsRes.data ?? [];
     const prices = pricesRes.data ?? [];
+
+    // Deduplicate: keep most recent per token+signal (already sorted by created_at DESC)
+    const seenKeys = new Set<string>();
+    const allSignals = rawSignals.filter((s) => {
+      const key = `${s.token_symbol}|${s.signal_name}`;
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
 
     // Build price map: symbol -> { price, change_24h }
     const priceMap = new Map<

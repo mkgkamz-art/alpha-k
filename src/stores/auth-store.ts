@@ -1,11 +1,13 @@
 import { create } from "zustand";
-import type { SubscriptionTier } from "@/types";
+import type { SubscriptionTier, SubscriptionStatus } from "@/types";
 
 export interface AuthUser {
   id: string;
   email: string;
   displayName: string | null;
   subscriptionTier: SubscriptionTier;
+  subscriptionStatus: SubscriptionStatus;
+  trialEndsAt: string | null;
   avatarUrl?: string | null;
 }
 
@@ -21,6 +23,10 @@ interface AuthStore {
   isPro: boolean;
   /** true if Whale only */
   isWhale: boolean;
+  /** true if currently on trial */
+  isOnTrial: boolean;
+  /** subscription status */
+  subscriptionStatus: SubscriptionStatus | null;
 
   /** Set user on login / session restore */
   setUser: (user: AuthUser | null) => void;
@@ -33,9 +39,22 @@ interface AuthStore {
 }
 
 function deriveTier(user: AuthUser | null) {
-  if (!user) return { tier: null as SubscriptionTier | null, isPro: false, isWhale: false };
-  const t = user.subscriptionTier;
-  return { tier: t, isPro: t === "pro" || t === "whale", isWhale: t === "whale" };
+  if (!user)
+    return {
+      tier: null as SubscriptionTier | null,
+      isPro: false,
+      isWhale: false,
+      isOnTrial: false,
+      subscriptionStatus: null as SubscriptionStatus | null,
+    };
+  const t = user.subscriptionTier ?? "free";
+  return {
+    tier: t,
+    isPro: t === "pro" || t === "whale",
+    isWhale: t === "whale",
+    isOnTrial: user.subscriptionStatus === "trialing",
+    subscriptionStatus: user.subscriptionStatus ?? "free",
+  };
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -44,12 +63,23 @@ export const useAuthStore = create<AuthStore>((set) => ({
   tier: null,
   isPro: false,
   isWhale: false,
+  isOnTrial: false,
+  subscriptionStatus: null,
   setUser: (user) => set({ user, loading: false, ...deriveTier(user) }),
   setSubscription: (tier) =>
     set((state) => {
       const updated = state.user ? { ...state.user, subscriptionTier: tier } : null;
       return { user: updated, ...deriveTier(updated) };
     }),
-  logout: () => set({ user: null, loading: false, tier: null, isPro: false, isWhale: false }),
+  logout: () =>
+    set({
+      user: null,
+      loading: false,
+      tier: null,
+      isPro: false,
+      isWhale: false,
+      isOnTrial: false,
+      subscriptionStatus: null,
+    }),
   setLoading: (loading) => set({ loading }),
 }));

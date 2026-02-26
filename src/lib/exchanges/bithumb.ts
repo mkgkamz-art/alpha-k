@@ -63,3 +63,67 @@ export async function getBithumbTickers(): Promise<BithumbTicker[]> {
 
   throw lastError ?? new Error("Bithumb fetch failed");
 }
+
+/* ── Orderbook Types ── */
+
+export interface BithumbOrderbookEntry {
+  price: number;
+  quantity: number;
+}
+
+export interface BithumbOrderbook {
+  symbol: string;
+  bids: BithumbOrderbookEntry[];
+  asks: BithumbOrderbookEntry[];
+}
+
+/**
+ * Fetch orderbook for a single KRW symbol.
+ * 호가 정보: 상/하 30호가.
+ */
+export async function getBithumbOrderbook(
+  symbol: string,
+): Promise<BithumbOrderbook | null> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(
+        `${BITHUMB_API}/orderbook/${symbol}_KRW?count=30`,
+        { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+      );
+
+      if (!res.ok) throw new Error(`Bithumb orderbook HTTP ${res.status}`);
+
+      const data = await res.json();
+
+      if (data.status !== "0000") {
+        throw new Error(
+          `Bithumb orderbook status: ${data.status} ${data.message ?? ""}`,
+        );
+      }
+
+      const bids: BithumbOrderbookEntry[] = (data.data.bids ?? []).map(
+        (b: { price: string; quantity: string }) => ({
+          price: Number(b.price),
+          quantity: Number(b.quantity),
+        }),
+      );
+
+      const asks: BithumbOrderbookEntry[] = (data.data.asks ?? []).map(
+        (a: { price: string; quantity: string }) => ({
+          price: Number(a.price),
+          quantity: Number(a.quantity),
+        }),
+      );
+
+      return { symbol, bids, asks };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < MAX_RETRIES) await sleep(attempt * 2_000);
+    }
+  }
+
+  console.warn(`[bithumb] Orderbook failed for ${symbol}:`, lastError?.message);
+  return null;
+}

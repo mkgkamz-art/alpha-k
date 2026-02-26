@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/query-provider";
 import { ToastProvider } from "@/components/layout/toast-provider";
@@ -77,6 +78,10 @@ export default function RootLayout({
           {children}
           <ToastProvider />
         </QueryProvider>
+        <Script
+          src="https://app.lemonsqueezy.com/js/lemon.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

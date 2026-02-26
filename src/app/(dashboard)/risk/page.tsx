@@ -18,6 +18,7 @@ import {
   YAxis,
   ReferenceLine,
 } from "recharts";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatNumber, formatPercentage, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +74,7 @@ export default function RiskPage() {
     order: "desc",
   });
   const [loginModal, setLoginModal] = useState(false);
+  const router = useRouter();
 
   const user = useAuthStore((s) => s.user);
   const { data, isLoading } = useRiskDashboard(filters);
@@ -126,8 +128,12 @@ export default function RiskPage() {
               filterOptions={filterOptions}
               loading={isLoading}
               onFiltersChange={setFilters}
-              onSetAlert={() => {
-                if (!user) setLoginModal(true);
+              onSetAlert={(protocolName) => {
+                if (!user) {
+                  setLoginModal(true);
+                } else {
+                  router.push(`/alerts?protocol=${encodeURIComponent(protocolName)}`);
+                }
               }}
               isAuthed={!!user}
             />
@@ -375,7 +381,7 @@ function ProtocolSection({
   filterOptions?: { categories: string[]; chains: string[] };
   loading: boolean;
   onFiltersChange: (f: RiskFilters) => void;
-  onSetAlert: () => void;
+  onSetAlert: (protocolName: string) => void;
   isAuthed: boolean;
 }) {
   const toggleSort = (field: string) => {
@@ -566,7 +572,7 @@ const ProtocolRow = memo(function ProtocolRow({
 }: {
   protocol: DefiProtocol;
   rank: number;
-  onSetAlert: () => void;
+  onSetAlert: (protocolName: string) => void;
   isAuthed: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -671,7 +677,7 @@ const ProtocolRow = memo(function ProtocolRow({
                 className="text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (!isAuthed) onSetAlert();
+                  onSetAlert(p.protocol_name);
                 }}
               >
                 <ShieldAlert className="w-3.5 h-3.5" />

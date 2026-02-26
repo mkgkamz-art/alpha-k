@@ -25,10 +25,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch user record to get ls_subscription_id
   const { data: profile, error: profileError } = await supabase
     .from("users")
-    .select("subscription_tier, ls_subscription_id, ls_variant_id, ls_customer_id")
+    .select(
+      "subscription_tier, subscription_status, trial_ends_at, ls_subscription_id, ls_variant_id, ls_customer_id",
+    )
     .eq("id", user.id)
     .single();
 
@@ -36,12 +37,12 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // If no active subscription, return minimal info
+  // No active LS subscription → return local DB state
   if (!profile.ls_subscription_id) {
     return NextResponse.json({
       subscription: {
         tier: profile.subscription_tier ?? "free",
-        status: profile.subscription_tier === "free" ? "free" : "inactive",
+        status: profile.subscription_status ?? "free",
         plan: null,
         renewsAt: null,
         endsAt: null,
@@ -49,6 +50,9 @@ export async function GET() {
         interval: null,
         customerPortalUrl: null,
         updatePaymentUrl: null,
+        isOnTrial: false,
+        trialEndsAt: null,
+        daysLeftInTrial: 0,
       },
     });
   }
@@ -63,7 +67,7 @@ export async function GET() {
       return NextResponse.json({
         subscription: {
           tier: profile.subscription_tier ?? "free",
-          status: "active",
+          status: profile.subscription_status ?? "active",
           plan: null,
           renewsAt: null,
           endsAt: null,
@@ -71,6 +75,9 @@ export async function GET() {
           interval: null,
           customerPortalUrl: null,
           updatePaymentUrl: null,
+          isOnTrial: false,
+          trialEndsAt: null,
+          daysLeftInTrial: 0,
         },
       });
     }
@@ -81,15 +88,30 @@ export async function GET() {
       ? getPlanByVariantId(profile.ls_variant_id)
       : null;
 
-    // Determine interval from variant ID
     const isYearly = plan
       ? profile.ls_variant_id === plan.yearly.variantId
       : false;
 
+    // Trial info
+    const isOnTrial = attrs?.status === "on_trial";
+    const trialEndsAt =
+      profile.trial_ends_at ??
+      ((attrs?.trial_ends_at as string | null) ?? null);
+    const daysLeftInTrial =
+      isOnTrial && trialEndsAt
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(trialEndsAt).getTime() - Date.now()) /
+                (1000 * 60 * 60 * 24),
+            ),
+          )
+        : 0;
+
     return NextResponse.json({
       subscription: {
         tier: profile.subscription_tier ?? "free",
-        status: attrs?.status ?? "active",
+        status: attrs?.status ?? profile.subscription_status ?? "active",
         cancelled: attrs?.cancelled ?? false,
         plan: plan?.name ?? null,
         renewsAt: attrs?.renews_at ?? null,
@@ -100,6 +122,9 @@ export async function GET() {
         interval: isYearly ? "yearly" : "monthly",
         customerPortalUrl: urls.customer_portal ?? null,
         updatePaymentUrl: urls.update_payment_method ?? null,
+        isOnTrial,
+        trialEndsAt,
+        daysLeftInTrial,
       },
     });
   } catch (err) {
@@ -107,7 +132,7 @@ export async function GET() {
     return NextResponse.json({
       subscription: {
         tier: profile.subscription_tier ?? "free",
-        status: "active",
+        status: profile.subscription_status ?? "active",
         plan: null,
         renewsAt: null,
         endsAt: null,
@@ -115,6 +140,9 @@ export async function GET() {
         interval: null,
         customerPortalUrl: null,
         updatePaymentUrl: null,
+        isOnTrial: false,
+        trialEndsAt: null,
+        daysLeftInTrial: 0,
       },
     });
   }
@@ -148,7 +176,7 @@ export async function POST(request: NextRequest) {
   if (!profile?.ls_subscription_id) {
     return NextResponse.json(
       { error: "No active subscription" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -171,7 +199,7 @@ export async function POST(request: NextRequest) {
     console.error(`[subscription] ${action} error:`, err);
     return NextResponse.json(
       { error: `Failed to ${action} subscription` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

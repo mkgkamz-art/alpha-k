@@ -644,7 +644,7 @@ function SurgeSideWidget() {
                 {s.symbol}
               </span>
               <span className="text-sm font-semibold tabular-nums text-emerald-400">
-                +{s.change_24h.toFixed(1)}%
+                +{s.change_pct.toFixed(1)}%
               </span>
             </div>
           ))}

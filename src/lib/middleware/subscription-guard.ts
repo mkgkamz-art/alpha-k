@@ -27,7 +27,7 @@ export type Feature =
   | "unlimited_api";
 
 const TIER_FEATURES: Record<SubscriptionTier, Set<Feature>> = {
-  free: new Set(),
+  free: new Set(["api_access"]),
   pro: new Set([
     "unlimited_rules",
     "realtime_alerts",
@@ -51,7 +51,7 @@ const TIER_FEATURES: Record<SubscriptionTier, Set<Feature>> = {
 };
 
 const TIER_LIMITS: Record<SubscriptionTier, { maxRules: number; apiCallsPerDay: number }> = {
-  free: { maxRules: 3, apiCallsPerDay: 0 },
+  free: { maxRules: 3, apiCallsPerDay: 10 },
   pro: { maxRules: Infinity, apiCallsPerDay: 1000 },
   whale: { maxRules: Infinity, apiCallsPerDay: Infinity },
 };

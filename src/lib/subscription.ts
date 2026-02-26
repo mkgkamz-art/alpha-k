@@ -70,6 +70,12 @@ export const ACCESS_MATRIX = {
     pro: { maxCoins: Infinity },
     whale: { maxCoins: Infinity },
   },
+  /** 레이더 피드 */
+  radar: {
+    free: { maxSignals: 5, refreshInterval: 60_000 },
+    pro: { maxSignals: Infinity, refreshInterval: 30_000 },
+    whale: { maxSignals: Infinity, refreshInterval: 15_000 },
+  },
 } as const;
 
 /* ── Helper functions ── */

@@ -11,12 +11,12 @@
  *   /watchlist     — Show watchlist tokens
  *   /help          — Show available commands
  *
- * Connection Flow (5 steps):
- *   1. Web: user clicks "Connect Telegram" → 6-digit code generated (5 min TTL)
- *   2. User sends /start <code> to bot
- *   3. Bot validates code, checks expiry
- *   4. chat_id saved to users table
- *   5. Confirmation message sent to both Telegram & web
+ * Connection Flow (reversed — bot generates code):
+ *   1. User sends /start to @blosafe_alert_bot
+ *   2. Bot generates 6-digit code, stores in DB, sends to user
+ *   3. User enters code in web Settings page
+ *   4. Web calls /api/telegram/verify → validates code, saves chat_id
+ *   5. Confirmation message sent to Telegram
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -50,14 +50,13 @@ interface LinkCode {
   expiresAt: number;
 }
 
-/* ── Link Code Store (in-memory, 5 min TTL) ── */
+/* ── Link Code Store (in-memory, backward compat) ── */
 
 const LINK_CODE_TTL_MS = 5 * 60 * 1_000; // 5 minutes
 const pendingCodes = new Map<string, LinkCode>();
 
-/** Generate a 6-digit linking code for a user (called from Settings API) */
+/** Generate a 6-digit linking code for a user (old flow, backward compat) */
 export function generateLinkCode(userId: string): string {
-  // Remove any existing code for this user
   for (const [code, entry] of pendingCodes) {
     if (entry.userId === userId) pendingCodes.delete(code);
   }
@@ -73,7 +72,7 @@ export function generateLinkCode(userId: string): string {
   return code;
 }
 
-/** Validate and consume a link code. Returns userId if valid. */
+/** Validate and consume an old-flow link code. Returns userId if valid. */
 function consumeLinkCode(code: string): string | null {
   const entry = pendingCodes.get(code);
   if (!entry) return null;
@@ -85,11 +84,68 @@ function consumeLinkCode(code: string): string | null {
   return entry.userId;
 }
 
-/** Periodic cleanup of expired codes */
-export function cleanupExpiredCodes(): void {
+/* ── New Flow: Bot generates code → User enters in web ── */
+
+/** Generate a 6-digit code for a Telegram chatId (DB-backed, serverless safe) */
+export async function generateChatLinkCode(chatId: number): Promise<string> {
+  const supabase = createAdminClient();
+
+  // Remove existing codes for this chatId
+  await supabase
+    .from("telegram_verifications")
+    .delete()
+    .eq("chat_id", String(chatId));
+
+  const code = String(Math.floor(100_000 + Math.random() * 900_000));
+  const expiresAt = new Date(Date.now() + LINK_CODE_TTL_MS).toISOString();
+
+  await supabase.from("telegram_verifications").insert({
+    verification_code: code,
+    chat_id: String(chatId),
+    expires_at: expiresAt,
+  });
+
+  return code;
+}
+
+/** Verify a code entered in the web UI. Returns chatId string if valid, null otherwise. */
+export async function verifyTelegramCode(code: string): Promise<string | null> {
+  const supabase = createAdminClient();
+
+  const { data } = await supabase
+    .from("telegram_verifications")
+    .select("chat_id, expires_at")
+    .eq("verification_code", code)
+    .single();
+
+  if (!data) return null;
+
+  // Delete the code (single-use)
+  await supabase.from("telegram_verifications").delete().eq("verification_code", code);
+
+  // Check expiry
+  if (new Date(data.expires_at) < new Date()) return null;
+
+  return data.chat_id;
+}
+
+/** Periodic cleanup of expired codes (both in-memory and DB) */
+export async function cleanupExpiredCodes(): Promise<void> {
+  // In-memory cleanup (old flow)
   const now = Date.now();
   for (const [code, entry] of pendingCodes) {
     if (now > entry.expiresAt) pendingCodes.delete(code);
+  }
+
+  // DB cleanup (new flow)
+  try {
+    const supabase = createAdminClient();
+    await supabase
+      .from("telegram_verifications")
+      .delete()
+      .lt("expires_at", new Date().toISOString());
+  } catch {
+    // Non-critical cleanup
   }
 }
 
@@ -104,9 +160,9 @@ function esc(text: string): string {
 
 /**
  * /start [code]
- * Step 2-5 of the connection flow:
- *   - No code → welcome message with instructions
- *   - With code → validate, link chat_id, confirm
+ * New flow (reversed):
+ *   - No code → generate 6-digit code → send to user → user enters in web
+ *   - With code → backward compat: validate old-flow code, link chat_id
  */
 async function handleStart(
   chatId: number,
@@ -115,22 +171,31 @@ async function handleStart(
 ): Promise<void> {
   const code = args.trim();
 
-  // No code: welcome message
+  // No code: NEW FLOW — generate code and send to user
   if (!code) {
-    await sendTelegramMessage(
-      String(chatId),
-      [
-        `\u{1F44B} *Welcome to BLOSAFE\\!*`,
-        ``,
-        `To connect your account:`,
-        `1\\. Go to *Settings \\> Telegram* on the web`,
-        `2\\. Click *Connect Telegram*`,
-        `3\\. Copy the 6\\-digit code`,
-        `4\\. Send \`/start YOUR_CODE\` here`,
-        ``,
-        `Type /help for all commands\\.`,
-      ].join("\n")
-    );
+    try {
+      const linkCode = await generateChatLinkCode(chatId);
+      await sendTelegramMessage(
+        String(chatId),
+        [
+          `\u{1F44B} *Alpha K 텔레그램 연동*`,
+          ``,
+          `안녕하세요, ${esc(firstName)}\\!`,
+          ``,
+          `인증 코드: \`${linkCode}\``,
+          ``,
+          `웹사이트 *설정 \\> 알림 연동* 에서`,
+          `위 코드를 입력하세요\\.`,
+          ``,
+          `코드는 5분 후 만료됩니다\\.`,
+        ].join("\n")
+      );
+    } catch {
+      await sendTelegramMessage(
+        String(chatId),
+        `\u274C 코드 생성에 실패했습니다\\. 다시 시도해주세요\\.`
+      );
+    }
     return;
   }
 
@@ -138,49 +203,51 @@ async function handleStart(
   if (!/^\d{6}$/.test(code)) {
     await sendTelegramMessage(
       String(chatId),
-      `\u274C Invalid code format\\. Please enter a 6\\-digit code\\.`
+      `\u274C 잘못된 코드 형식입니다\\. 6자리 숫자를 입력하세요\\.`
     );
     return;
   }
 
-  // Step 3: Validate code
+  // Backward compat: old flow — validate code from web
   const userId = consumeLinkCode(code);
   if (!userId) {
     await sendTelegramMessage(
       String(chatId),
-      `\u274C Code expired or invalid\\. Please generate a new code from Settings\\.`
+      `\u274C 코드가 만료되었거나 유효하지 않습니다\\.\n/start 를 다시 전송하여 새 코드를 받으세요\\.`
     );
     return;
   }
 
-  // Step 4: Save chat_id to users table
   try {
     const supabase = createAdminClient();
 
     const { error } = await supabase
       .from("users")
-      .update({ telegram_chat_id: String(chatId) })
+      .update({
+        telegram_chat_id: String(chatId),
+        telegram_username: null, // old flow doesn't have username context
+        telegram_connected_at: new Date().toISOString(),
+      })
       .eq("id", userId);
 
     if (error) throw error;
 
-    // Step 5: Confirmation
     await sendTelegramMessage(
       String(chatId),
       [
-        `\u2705 *Account linked successfully\\!*`,
+        `\u2705 *계정이 연결되었습니다\\!*`,
         ``,
-        `Hi ${esc(firstName)}, your Telegram is now connected to BLOSAFE\\.`,
-        `You'll receive real\\-time alerts here\\.`,
+        `${esc(firstName)}님, 텔레그램이 Alpha K에 연결되었습니다\\.`,
+        `이제 실시간 알림을 받을 수 있습니다\\.`,
         ``,
-        `\u{1F514} Use /status to check your settings`,
-        `\u{1F515} Use /mute to pause notifications`,
+        `\u{1F514} /status \\- 설정 확인`,
+        `\u{1F515} /mute \\- 알림 일시정지`,
       ].join("\n")
     );
   } catch {
     await sendTelegramMessage(
       String(chatId),
-      `\u274C Failed to link account\\. Please try again later\\.`
+      `\u274C 계정 연결에 실패했습니다\\. 다시 시도해주세요\\.`
     );
   }
 }

@@ -10,6 +10,7 @@ import type { SubscriptionTier } from "@/types";
  *  - subscription_created
  *  - subscription_updated
  *  - subscription_cancelled
+ *  - subscription_expired
  *  - subscription_payment_success
  */
 
@@ -56,6 +57,7 @@ interface LsWebhookEvent {
       cancelled: boolean;
       renews_at: string | null;
       ends_at: string | null;
+      trial_ends_at: string | null;
       [key: string]: unknown;
     };
   };
@@ -99,10 +101,14 @@ export async function POST(req: NextRequest) {
     switch (eventName) {
       case "subscription_created": {
         const tier = tierFromVariantId(variantId);
+        const isOnTrial = attrs.status === "on_trial";
+
         await supabase
           .from("users")
           .update({
             subscription_tier: tier,
+            subscription_status: isOnTrial ? "trialing" : "active",
+            trial_ends_at: isOnTrial ? (attrs.trial_ends_at ?? null) : null,
             ls_customer_id: customerId,
             ls_subscription_id: subscriptionId,
             ls_variant_id: variantId,
@@ -110,43 +116,93 @@ export async function POST(req: NextRequest) {
           })
           .eq("id", userId);
 
-        console.log(`[ls-webhook] User ${userId} upgraded to ${tier}`);
+        console.log(
+          `[ls-webhook] User ${userId} ${isOnTrial ? "started trial" : "subscribed"} for ${tier}`,
+        );
         break;
       }
 
       case "subscription_updated": {
         const tier = tierFromVariantId(variantId);
-        await supabase
-          .from("users")
-          .update({
-            subscription_tier: tier,
-            ls_variant_id: variantId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", userId);
+        const status = attrs.status;
 
-        console.log(`[ls-webhook] User ${userId} subscription updated to ${tier}`);
+        // Map LS status to our subscription_status
+        let subscriptionStatus: string;
+        if (status === "on_trial") subscriptionStatus = "trialing";
+        else if (status === "active") subscriptionStatus = "active";
+        else if (status === "cancelled" || status === "expired")
+          subscriptionStatus = "cancelled";
+        else subscriptionStatus = "active"; // past_due, paused → still give access
+
+        const updateData: Record<string, unknown> = {
+          subscription_tier: tier,
+          subscription_status: subscriptionStatus,
+          ls_variant_id: variantId,
+          updated_at: new Date().toISOString(),
+        };
+
+        // Clear trial_ends_at when transitioning from trial to active
+        if (status === "active") {
+          updateData.trial_ends_at = null;
+        }
+
+        await supabase.from("users").update(updateData).eq("id", userId);
+
+        console.log(
+          `[ls-webhook] User ${userId} subscription updated: ${tier} / ${subscriptionStatus}`,
+        );
         break;
       }
 
       case "subscription_cancelled": {
+        // User requested cancellation. Keep tier until ends_at.
         await supabase
           .from("users")
           .update({
-            subscription_tier: "free" as SubscriptionTier,
-            ls_subscription_id: null,
-            ls_variant_id: null,
+            subscription_status: "cancelled",
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
 
-        console.log(`[ls-webhook] User ${userId} downgraded to free`);
+        console.log(
+          `[ls-webhook] User ${userId} cancelled (access until ends_at)`,
+        );
+        break;
+      }
+
+      case "subscription_expired": {
+        // Subscription fully expired — downgrade to free
+        await supabase
+          .from("users")
+          .update({
+            subscription_tier: "free" as SubscriptionTier,
+            subscription_status: "expired",
+            ls_subscription_id: null,
+            ls_variant_id: null,
+            trial_ends_at: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userId);
+
+        console.log(
+          `[ls-webhook] User ${userId} subscription expired, downgraded to free`,
+        );
         break;
       }
 
       case "subscription_payment_success": {
+        // First real payment after trial → confirm active status
+        await supabase
+          .from("users")
+          .update({
+            subscription_status: "active",
+            trial_ends_at: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userId);
+
         console.log(
-          `[ls-webhook] Payment success for user ${userId}, sub ${subscriptionId}`
+          `[ls-webhook] Payment success for user ${userId}, sub ${subscriptionId}`,
         );
         break;
       }

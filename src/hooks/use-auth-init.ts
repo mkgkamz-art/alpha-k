@@ -4,24 +4,8 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/auth-store";
 import type { AuthUser } from "@/stores/auth-store";
-import type { SubscriptionTier } from "@/types";
+import type { SubscriptionTier, SubscriptionStatus } from "@/types";
 import type { User } from "@supabase/supabase-js";
-
-/**
- * Maps a Supabase User to our AuthUser shape.
- * Handles Google OAuth metadata: full_name, avatar_url, etc.
- */
-function mapUser(u: User): AuthUser {
-  const meta = u.user_metadata ?? {};
-
-  return {
-    id: u.id,
-    email: u.email ?? "",
-    displayName: meta.full_name ?? meta.display_name ?? meta.name ?? u.email ?? null,
-    subscriptionTier: (meta.subscription_tier as SubscriptionTier) ?? "free",
-    avatarUrl: meta.avatar_url ?? meta.picture ?? null,
-  };
-}
 
 /**
  * Initializes auth state from Supabase session.
@@ -29,6 +13,7 @@ function mapUser(u: User): AuthUser {
  *
  * - Checks current session on mount
  * - Listens for onAuthStateChange (login / logout / token refresh)
+ * - Fetches subscription state from users table (webhook keeps this in sync)
  * - Syncs user → Zustand auth store
  */
 export function useAuthInit() {
@@ -37,16 +22,47 @@ export function useAuthInit() {
   useEffect(() => {
     const supabase = createClient();
 
+    async function loadUser(u: User | null) {
+      if (!u) {
+        setUser(null);
+        return;
+      }
+
+      const meta = u.user_metadata ?? {};
+
+      // Fetch subscription state from users table (webhook keeps this up-to-date)
+      const { data: profile } = await supabase
+        .from("users")
+        .select("subscription_tier, subscription_status, trial_ends_at")
+        .eq("id", u.id)
+        .single();
+
+      const authUser: AuthUser = {
+        id: u.id,
+        email: u.email ?? "",
+        displayName:
+          meta.full_name ?? meta.display_name ?? meta.name ?? u.email ?? null,
+        subscriptionTier:
+          (profile?.subscription_tier as SubscriptionTier) ?? "free",
+        subscriptionStatus:
+          (profile?.subscription_status as SubscriptionStatus) ?? "free",
+        trialEndsAt: profile?.trial_ends_at ?? null,
+        avatarUrl: meta.avatar_url ?? meta.picture ?? null,
+      };
+
+      setUser(authUser);
+    }
+
     // 1. Check existing session
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user ? mapUser(user) : null);
+      loadUser(user);
     });
 
     // 2. Listen for auth changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? mapUser(session.user) : null);
+      loadUser(session?.user ?? null);
     });
 
     return () => {

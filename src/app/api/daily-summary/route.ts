@@ -43,9 +43,8 @@ export async function GET() {
         .select("*", { count: "exact", head: true })
         .gte("detected_at", todayISO),
       supabase
-        .from("context_alerts")
+        .from("whale_events")
         .select("*", { count: "exact", head: true })
-        .eq("alert_type", "whale")
         .gte("created_at", todayISO),
     ]);
 

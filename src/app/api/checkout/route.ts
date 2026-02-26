@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       variantId,
       userEmail: email,
       userId,
+      trialDays: plan.trialDays,
     });
 
     return NextResponse.json({ url });

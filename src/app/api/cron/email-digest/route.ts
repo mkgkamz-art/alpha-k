@@ -8,7 +8,8 @@ import type { AlertType, Severity } from "@/types";
  * Cron: Daily email digest (daily at 08:00 UTC)
  *
  * Sends a summary of yesterday's alerts to each user who has email enabled.
- * Only Pro and Whale tier users receive digest emails.
+ * During promo: all users (effective tier = pro).
+ * After promo: only Pro and Whale tier users.
  */
 
 export async function GET(req: NextRequest) {
@@ -19,12 +20,11 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createAdminClient();
 
-    // Get users with paid tiers (pro/whale) who have emails
     const { data: users } = await supabase
       .from("users")
       .select("id, email, display_name, subscription_tier")
-      .in("subscription_tier", ["pro", "whale"])
-      .not("email", "is", null);
+      .not("email", "is", null)
+      .in("subscription_tier", ["pro", "whale"]);
 
     if (!users?.length) {
       return NextResponse.json({

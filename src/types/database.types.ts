@@ -18,6 +18,8 @@ export type Database = {
           email: string;
           display_name: string | null;
           subscription_tier: Database["public"]["Enums"]["subscription_tier"];
+          subscription_status: string;
+          trial_ends_at: string | null;
           ls_customer_id: string | null;
           ls_subscription_id: string | null;
           ls_variant_id: string | null;
@@ -29,6 +31,9 @@ export type Database = {
           max_alerts_per_hour: number;
           timezone: string;
           created_at: string;
+          notification_preferences: Json | null;
+          telegram_username: string | null;
+          telegram_connected_at: string | null;
           updated_at: string;
         };
         Insert: {
@@ -36,6 +41,8 @@ export type Database = {
           email: string;
           display_name?: string | null;
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"];
+          subscription_status?: string;
+          trial_ends_at?: string | null;
           ls_customer_id?: string | null;
           ls_subscription_id?: string | null;
           ls_variant_id?: string | null;
@@ -46,6 +53,9 @@ export type Database = {
           quiet_hours_end?: string | null;
           max_alerts_per_hour?: number;
           timezone?: string;
+          notification_preferences?: Json | null;
+          telegram_username?: string | null;
+          telegram_connected_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -54,6 +64,8 @@ export type Database = {
           email?: string;
           display_name?: string | null;
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"];
+          subscription_status?: string;
+          trial_ends_at?: string | null;
           ls_customer_id?: string | null;
           ls_subscription_id?: string | null;
           ls_variant_id?: string | null;
@@ -64,6 +76,9 @@ export type Database = {
           quiet_hours_end?: string | null;
           max_alerts_per_hour?: number;
           timezone?: string;
+          notification_preferences?: Json | null;
+          telegram_username?: string | null;
+          telegram_connected_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -321,6 +336,244 @@ export type Database = {
           usd_value?: number;
           event_type?: string;
           detected_at?: string;
+        };
+        Relationships: [];
+      };
+      whales: {
+        Row: {
+          id: string;
+          address: string;
+          label: string;
+          chain: Database["public"]["Enums"]["whale_chain"];
+          tier: Database["public"]["Enums"]["whale_tier"];
+          profile: Record<string, unknown>;
+          return_7d_pct: number;
+          return_30d_pct: number;
+          return_90d_pct: number;
+          win_rate_30d: number;
+          total_trades_30d: number;
+          follower_count: number;
+          is_active: boolean;
+          first_tracked_at: string;
+          last_trade_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          address: string;
+          label: string;
+          chain: Database["public"]["Enums"]["whale_chain"];
+          tier?: Database["public"]["Enums"]["whale_tier"];
+          profile?: Record<string, unknown>;
+          return_7d_pct?: number;
+          return_30d_pct?: number;
+          return_90d_pct?: number;
+          win_rate_30d?: number;
+          total_trades_30d?: number;
+          follower_count?: number;
+          is_active?: boolean;
+          first_tracked_at?: string;
+          last_trade_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          address?: string;
+          label?: string;
+          chain?: Database["public"]["Enums"]["whale_chain"];
+          tier?: Database["public"]["Enums"]["whale_tier"];
+          profile?: Record<string, unknown>;
+          return_7d_pct?: number;
+          return_30d_pct?: number;
+          return_90d_pct?: number;
+          win_rate_30d?: number;
+          total_trades_30d?: number;
+          follower_count?: number;
+          is_active?: boolean;
+          first_tracked_at?: string;
+          last_trade_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      whale_portfolios: {
+        Row: {
+          id: string;
+          whale_id: string;
+          coin_symbol: string;
+          coin_name: string;
+          amount: number;
+          value_usd: number;
+          weight_pct: number;
+          avg_entry_price: number;
+          current_price: number;
+          unrealized_pnl_pct: number;
+          first_bought_at: string | null;
+          last_updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          whale_id: string;
+          coin_symbol: string;
+          coin_name: string;
+          amount?: number;
+          value_usd?: number;
+          weight_pct?: number;
+          avg_entry_price?: number;
+          current_price?: number;
+          unrealized_pnl_pct?: number;
+          first_bought_at?: string | null;
+          last_updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          whale_id?: string;
+          coin_symbol?: string;
+          coin_name?: string;
+          amount?: number;
+          value_usd?: number;
+          weight_pct?: number;
+          avg_entry_price?: number;
+          current_price?: number;
+          unrealized_pnl_pct?: number;
+          first_bought_at?: string | null;
+          last_updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "whale_portfolios_whale_id_fkey";
+            columns: ["whale_id"];
+            isOneToOne: false;
+            referencedRelation: "whales";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      whale_trades: {
+        Row: {
+          id: string;
+          whale_id: string;
+          coin_symbol: string;
+          coin_name: string;
+          trade_type: Database["public"]["Enums"]["whale_trade_type"];
+          amount: number;
+          value_usd: number;
+          price: number;
+          tx_hash: string;
+          exchange_or_dex: string | null;
+          realized_pnl_pct: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          whale_id: string;
+          coin_symbol: string;
+          coin_name: string;
+          trade_type: Database["public"]["Enums"]["whale_trade_type"];
+          amount: number;
+          value_usd: number;
+          price: number;
+          tx_hash: string;
+          exchange_or_dex?: string | null;
+          realized_pnl_pct?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          whale_id?: string;
+          coin_symbol?: string;
+          coin_name?: string;
+          trade_type?: Database["public"]["Enums"]["whale_trade_type"];
+          amount?: number;
+          value_usd?: number;
+          price?: number;
+          tx_hash?: string;
+          exchange_or_dex?: string | null;
+          realized_pnl_pct?: number | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "whale_trades_whale_id_fkey";
+            columns: ["whale_id"];
+            isOneToOne: false;
+            referencedRelation: "whales";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      whale_follows: {
+        Row: {
+          id: string;
+          user_id: string;
+          whale_id: string;
+          alert_telegram: boolean;
+          alert_push: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          whale_id: string;
+          alert_telegram?: boolean;
+          alert_push?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          whale_id?: string;
+          alert_telegram?: boolean;
+          alert_push?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "whale_follows_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "whale_follows_whale_id_fkey";
+            columns: ["whale_id"];
+            isOneToOne: false;
+            referencedRelation: "whales";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      whale_hot_coins: {
+        Row: {
+          id: string;
+          coin_symbol: string;
+          coin_name: string;
+          buy_whale_count_24h: number;
+          sell_whale_count_24h: number;
+          net_buy_volume_usd_24h: number;
+          avg_whale_tier: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          coin_symbol: string;
+          coin_name: string;
+          buy_whale_count_24h?: number;
+          sell_whale_count_24h?: number;
+          net_buy_volume_usd_24h?: number;
+          avg_whale_tier?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          coin_symbol?: string;
+          coin_name?: string;
+          buy_whale_count_24h?: number;
+          sell_whale_count_24h?: number;
+          net_buy_volume_usd_24h?: number;
+          avg_whale_tier?: number;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -686,6 +939,88 @@ export type Database = {
         };
         Relationships: [];
       };
+      api_keys: {
+        Row: {
+          id: string;
+          user_id: string;
+          api_key: string;
+          api_secret_hash: string;
+          status: string;
+          created_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          api_key: string;
+          api_secret_hash: string;
+          status?: string;
+          created_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          api_key?: string;
+          api_secret_hash?: string;
+          status?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      api_usage_logs: {
+        Row: {
+          id: string;
+          user_id: string;
+          api_key_id: string;
+          endpoint: string;
+          request_date: string;
+          request_count: number;
+          last_request_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          api_key_id: string;
+          endpoint: string;
+          request_date?: string;
+          request_count?: number;
+          last_request_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          api_key_id?: string;
+          endpoint?: string;
+          request_date?: string;
+          request_count?: number;
+          last_request_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey";
+            columns: ["api_key_id"];
+            isOneToOne: false;
+            referencedRelation: "api_keys";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       context_alerts: {
         Row: {
           id: number;
@@ -730,17 +1065,273 @@ export type Database = {
         };
         Relationships: [];
       };
+      telegram_verifications: {
+        Row: {
+          id: string;
+          chat_id: string;
+          verification_code: string;
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          chat_id: string;
+          verification_code: string;
+          expires_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          chat_id?: string;
+          verification_code?: string;
+          expires_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          alert_type: Database["public"]["Enums"]["notification_alert_type"];
+          telegram_enabled: boolean;
+          app_enabled: boolean;
+          custom_config: Json;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          alert_type: Database["public"]["Enums"]["notification_alert_type"];
+          telegram_enabled?: boolean;
+          app_enabled?: boolean;
+          custom_config?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          alert_type?: Database["public"]["Enums"]["notification_alert_type"];
+          telegram_enabled?: boolean;
+          app_enabled?: boolean;
+          custom_config?: Json;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_settings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      radar_signals: {
+        Row: {
+          id: string;
+          signal_type: Database["public"]["Enums"]["radar_signal_type"];
+          token_symbol: string;
+          token_name: string | null;
+          score: number;
+          strength: Database["public"]["Enums"]["radar_strength"];
+          title: string;
+          description: string | null;
+          data_snapshot: Json;
+          historical_pattern: Json;
+          source: string | null;
+          expires_at: string;
+          created_at: string;
+          status: string;
+          price_at_signal: number | null;
+        };
+        Insert: {
+          id?: string;
+          signal_type: Database["public"]["Enums"]["radar_signal_type"];
+          token_symbol: string;
+          token_name?: string | null;
+          score: number;
+          strength?: Database["public"]["Enums"]["radar_strength"];
+          title: string;
+          description?: string | null;
+          data_snapshot?: Json;
+          historical_pattern?: Json;
+          source?: string | null;
+          expires_at?: string;
+          created_at?: string;
+          status?: string;
+          price_at_signal?: number | null;
+        };
+        Update: {
+          id?: string;
+          signal_type?: Database["public"]["Enums"]["radar_signal_type"];
+          token_symbol?: string;
+          token_name?: string | null;
+          score?: number;
+          strength?: Database["public"]["Enums"]["radar_strength"];
+          title?: string;
+          description?: string | null;
+          data_snapshot?: Json;
+          historical_pattern?: Json;
+          source?: string | null;
+          expires_at?: string;
+          status?: string;
+          price_at_signal?: number | null;
+        };
+        Relationships: [];
+      };
+      radar_signal_results: {
+        Row: {
+          id: string;
+          signal_id: string;
+          price_at_signal: number | null;
+          price_5m: number | null;
+          price_1h: number | null;
+          price_24h: number | null;
+          price_change_5m: number | null;
+          price_change_1h: number | null;
+          price_change_24h: number | null;
+          is_hit: boolean;
+          evaluated_at: string;
+        };
+        Insert: {
+          id?: string;
+          signal_id: string;
+          price_at_signal?: number | null;
+          price_5m?: number | null;
+          price_1h?: number | null;
+          price_24h?: number | null;
+          price_change_5m?: number | null;
+          price_change_1h?: number | null;
+          price_change_24h?: number | null;
+          is_hit?: boolean;
+          evaluated_at?: string;
+        };
+        Update: {
+          id?: string;
+          signal_id?: string;
+          price_at_signal?: number | null;
+          price_5m?: number | null;
+          price_1h?: number | null;
+          price_24h?: number | null;
+          price_change_5m?: number | null;
+          price_change_1h?: number | null;
+          price_change_24h?: number | null;
+          is_hit?: boolean;
+          evaluated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "radar_signal_results_signal_id_fkey";
+            columns: ["signal_id"];
+            isOneToOne: false;
+            referencedRelation: "radar_signals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_radar_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          signal_types: string[];
+          min_score_alert: number;
+          notify_telegram: boolean;
+          notify_in_app: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          signal_types?: string[];
+          min_score_alert?: number;
+          notify_telegram?: boolean;
+          notify_in_app?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          signal_types?: string[];
+          min_score_alert?: number;
+          notify_telegram?: boolean;
+          notify_in_app?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_radar_settings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_radar_views: {
+        Row: {
+          id: string;
+          user_id: string;
+          signal_id: string;
+          viewed_date: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          signal_id: string;
+          viewed_date?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          signal_id?: string;
+          viewed_date?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_radar_views_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_radar_views_signal_id_fkey";
+            columns: ["signal_id"];
+            isOneToOne: false;
+            referencedRelation: "radar_signals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      increment_api_usage: {
+        Args: {
+          p_user_id: string;
+          p_api_key_id: string;
+          p_endpoint: string;
+          p_request_date: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       subscription_tier: "free" | "pro" | "whale";
       alert_type: "whale" | "risk" | "price_signal" | "token_unlock" | "liquidity";
       severity: "critical" | "high" | "medium" | "low";
+      notification_alert_type: "listing" | "surge" | "kimchi_premium" | "whale" | "defi_risk" | "trading_signal" | "liquidity";
+      radar_signal_type: "surge" | "kimchi" | "listing" | "signal" | "context" | "volume" | "orderbook" | "buzz" | "onchain";
+      radar_strength: "weak" | "moderate" | "strong" | "extreme";
+      whale_chain: "ethereum" | "bsc" | "solana" | "arbitrum" | "base" | "multi";
+      whale_tier: "s" | "a" | "b" | "c";
+      whale_trade_type: "buy" | "sell";
     };
     CompositeTypes: {
       [_ in never]: never;

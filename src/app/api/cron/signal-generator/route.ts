@@ -21,7 +21,9 @@ import {
   type DeliveryChannels,
 } from "@/lib/notifications/dispatcher";
 import { verifyCronSecret, cronUnauthorized } from "@/lib/cron-auth";
+import type { SubscriptionTier } from "@/types";
 import type { Json } from "@/types/database.types";
+import { calculateRadarScore, insertRadarSignal } from "@/lib/radar-scoring";
 
 export async function GET(req: NextRequest) {
   if (!verifyCronSecret(req)) return cronUnauthorized();
@@ -98,6 +100,33 @@ export async function GET(req: NextRequest) {
         .insert(rows)
         .select("id");
       insertCount = inserted?.length ?? 0;
+
+      // ── Step 4b: Insert into radar_signals ──
+      const radarPromises = allSignals
+        .filter((s) => s.confidence >= 50)
+        .map((sig) => {
+          const { score, strength } = calculateRadarScore({
+            type: "signal",
+            data: { confidence: sig.confidence },
+          });
+          return insertRadarSignal(supabase, {
+            signal_type: "signal",
+            token_symbol: sig.tokenSymbol,
+            token_name: sig.tokenName,
+            score,
+            strength,
+            title: `${sig.tokenSymbol} — ${sig.signalName}`,
+            description: sig.description,
+            data_snapshot: {
+              signal_type: sig.signalType,
+              confidence: sig.confidence,
+              timeframe: sig.timeframe,
+              price_at_signal: sig.priceAtSignal,
+            },
+            source: "cron/signal-generator",
+          });
+        });
+      await Promise.allSettled(radarPromises);
     }
 
     // ── Step 5: Alert events for high confidence signals ──
@@ -157,7 +186,7 @@ export async function GET(req: NextRequest) {
             .map((a) => {
               const profile = profileMap.get(a.user_id)!;
               const config: UserNotificationConfig = {
-                subscriptionTier: profile.subscription_tier as "free" | "pro" | "whale",
+                subscriptionTier: (profile.subscription_tier as SubscriptionTier) ?? "free",
                 email: profile.email,
                 telegramChatId: profile.telegram_chat_id,
                 discordWebhookUrl: profile.discord_webhook_url,

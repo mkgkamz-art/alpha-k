@@ -133,7 +133,7 @@ export function MarketBar() {
       <div className="flex items-center h-full px-3 md:px-5 gap-4 md:gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
         {/* BTC Price */}
         <Link
-          href="/kimchi"
+          href="/radar"
           className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors shrink-0"
         >
           <span className="font-mono">{btcFormatted}</span>
@@ -155,7 +155,7 @@ export function MarketBar() {
 
         {/* Kimchi Premium */}
         <Link
-          href="/kimchi"
+          href="/radar"
           className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors shrink-0"
         >
           <span>김프</span>
@@ -175,7 +175,7 @@ export function MarketBar() {
 
         {/* Surge Count */}
         <Link
-          href="/surge"
+          href="/radar"
           className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors shrink-0"
         >
           <span>🔥 급등</span>

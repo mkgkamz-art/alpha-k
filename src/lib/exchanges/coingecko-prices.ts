@@ -110,14 +110,23 @@ export async function getExchangeRate(): Promise<number> {
 
 /* ── Global USD Prices ── */
 
+const USD_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+let cachedUsdPrices: { data: Record<string, number>; ts: number } | null = null;
+
 /**
  * Fetch global USD prices for given CoinGecko IDs.
- * Returns map: coingecko_id → usd price
+ * Returns map: coingecko_id → usd price.
+ * Cached for 5 minutes to avoid CoinGecko 429 rate limits.
  */
 export async function getGlobalPricesUsd(
   ids: string[]
 ): Promise<Record<string, number>> {
   if (ids.length === 0) return {};
+
+  // Return cached data if fresh enough
+  if (cachedUsdPrices && Date.now() - cachedUsdPrices.ts < USD_CACHE_MS) {
+    return cachedUsdPrices.data;
+  }
 
   const prices: Record<string, number> = {};
 
@@ -133,6 +142,10 @@ export async function getGlobalPricesUsd(
 
       if (!res.ok) {
         console.warn(`[coingecko-prices] HTTP ${res.status} for batch ${i}`);
+        // On rate limit, return stale cache if available
+        if (res.status === 429 && cachedUsdPrices) {
+          return cachedUsdPrices.data;
+        }
         continue;
       }
 
@@ -143,8 +156,19 @@ export async function getGlobalPricesUsd(
       }
     } catch (err) {
       console.warn(`[coingecko-prices] Fetch error:`, err);
+      // On network error, return stale cache if available
+      if (cachedUsdPrices) return cachedUsdPrices.data;
     }
+  }
+
+  // Update cache only if we got meaningful data
+  if (Object.keys(prices).length > 0) {
+    cachedUsdPrices = { data: prices, ts: Date.now() };
+  } else if (cachedUsdPrices) {
+    // No new data — return stale cache
+    return cachedUsdPrices.data;
   }
 
   return prices;
 }
+

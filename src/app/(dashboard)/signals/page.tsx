@@ -395,8 +395,11 @@ const SignalCard = memo(function SignalCard({
           </p>
         </div>
 
-        {/* Confidence pill */}
+        {/* Time + Confidence */}
         <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] text-text-disabled hidden sm:inline">
+            {timeAgo(signal.created_at)}
+          </span>
           <div className="flex items-center gap-1.5">
             <div className="w-16 h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
               <div
@@ -498,24 +501,8 @@ const SignalCard = memo(function SignalCard({
               ))}
             </div>
 
-            {/* Indicator details */}
-            {indicatorNames.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                {indicatorNames.map((name) => (
-                  <div key={name} className="flex items-start gap-2 text-xs">
-                    <span className="text-text-secondary font-medium shrink-0">
-                      {name}:
-                    </span>
-                    <span className="text-text-disabled">
-                      {indicators[name]?.detail ?? "—"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Time */}
-            <span className="text-[10px] text-text-disabled">
+            {/* Time (mobile only — desktop shows in collapsed row) */}
+            <span className="text-[10px] text-text-disabled sm:hidden">
               {timeAgo(signal.created_at)}
             </span>
           </div>

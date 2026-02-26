@@ -66,6 +66,20 @@ export async function GET(req: NextRequest) {
       if (usd != null) symbolToUsd.set(sym, usd);
     }
 
+    // Fallback: if CoinGecko returned nothing (429), use token_prices table
+    if (symbolToUsd.size === 0) {
+      const { data: dbPrices } = await supabase
+        .from("token_prices")
+        .select("symbol, current_price")
+        .limit(200);
+
+      if (dbPrices) {
+        for (const row of dbPrices) {
+          symbolToUsd.set(row.symbol.toUpperCase(), Number(row.current_price));
+        }
+      }
+    }
+
     // 5. Build rows
     const now = new Date().toISOString();
     const rows: {
@@ -175,30 +189,72 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * Detect significant price moves and kimchi premium spikes,
- * then generate context alerts. Only fires for >=10% moves (upbit only, to avoid dupes).
+ * Detect significant 2h price moves and kimchi premium spikes,
+ * then generate context alerts. Only fires for >=10% 2h moves (upbit only, to avoid dupes).
+ * Deduplicates: skips if same symbol+alert_type exists within last 2 hours.
  */
 async function generateContextAlerts(
   rows: {
     symbol: string;
     exchange: string;
+    price_krw: number;
     change_24h: number | null;
     volume_24h: number | null;
     kimchi_premium: number | null;
   }[]
 ) {
   try {
-    // Surge/Dump alerts — only upbit to avoid duplicate alerts per symbol
+    const supabase = createAdminClient();
     const upbitRows = rows.filter((r) => r.exchange === "upbit");
 
+    // Fetch prices from ~2 hours ago to calculate 2h change
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const oldFrom = new Date(twoHoursAgo.getTime() - 10 * 60 * 1000).toISOString();
+    const oldTo = new Date(twoHoursAgo.getTime() + 10 * 60 * 1000).toISOString();
+
+    const { data: oldPrices } = await supabase
+      .from("korean_prices")
+      .select("symbol, price_krw")
+      .eq("exchange", "upbit")
+      .gte("fetched_at", oldFrom)
+      .lte("fetched_at", oldTo)
+      .order("fetched_at", { ascending: false });
+
+    // Dedup old prices: one per symbol
+    const oldPriceMap = new Map<string, number>();
+    for (const row of oldPrices ?? []) {
+      if (!oldPriceMap.has(row.symbol)) {
+        oldPriceMap.set(row.symbol, Number(row.price_krw));
+      }
+    }
+
+    // Check recent alerts to avoid duplicates (same symbol within 2h)
+    const recentCutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data: recentAlerts } = await supabase
+      .from("context_alerts")
+      .select("symbol, alert_type")
+      .in("alert_type", ["surge", "dump"])
+      .gte("created_at", recentCutoff);
+
+    const recentSet = new Set(
+      (recentAlerts ?? []).map((a) => `${a.symbol}|${a.alert_type}`)
+    );
+
+    // Surge/Dump alerts based on 2h change
     for (const row of upbitRows) {
-      const change = row.change_24h;
-      if (change == null || Math.abs(change) < 10) continue;
+      const oldPrice = oldPriceMap.get(row.symbol);
+      if (!oldPrice || oldPrice === 0 || row.price_krw === 0) continue;
+
+      const change2h = ((row.price_krw - oldPrice) / oldPrice) * 100;
+      if (Math.abs(change2h) < 10) continue; // threshold for context alerts
+
+      const alertType = change2h > 0 ? "surge" : "dump";
+      if (recentSet.has(`${row.symbol}|${alertType}`)) continue; // skip dupe
 
       await saveContextAlert(
         createSurgeContext({
           symbol: row.symbol,
-          change,
+          change: Math.round(change2h * 10) / 10,
           volume: row.volume_24h ?? 0,
           kimchi: row.kimchi_premium,
           exchange: "upbit",
@@ -214,19 +270,29 @@ async function generateContextAlerts(
     if (premiums.length > 0) {
       const avg = premiums.reduce((s, p) => s + p, 0) / premiums.length;
       if (avg >= 5) {
-        const topRow = upbitRows.reduce(
-          (best, r) =>
-            (r.kimchi_premium ?? 0) > (best.kimchi_premium ?? 0) ? r : best,
-          upbitRows[0]
-        );
+        // Check if kimchi alert was already created within 2h
+        const { data: recentKimchi } = await supabase
+          .from("context_alerts")
+          .select("id")
+          .eq("alert_type", "kimchi")
+          .gte("created_at", recentCutoff)
+          .limit(1);
 
-        await saveContextAlert(
-          createKimchiContext({
-            avgPremium: Math.round(avg * 100) / 100,
-            topSymbol: topRow.symbol,
-            topPremium: topRow.kimchi_premium ?? 0,
-          })
-        );
+        if (!recentKimchi || recentKimchi.length === 0) {
+          const topRow = upbitRows.reduce(
+            (best, r) =>
+              (r.kimchi_premium ?? 0) > (best.kimchi_premium ?? 0) ? r : best,
+            upbitRows[0]
+          );
+
+          await saveContextAlert(
+            createKimchiContext({
+              avgPremium: Math.round(avg * 100) / 100,
+              topSymbol: topRow.symbol,
+              topPremium: topRow.kimchi_premium ?? 0,
+            })
+          );
+        }
       }
     }
   } catch (err) {
