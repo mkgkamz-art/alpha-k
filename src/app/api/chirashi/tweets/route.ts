@@ -8,6 +8,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { withCache } from "@/lib/api-error-handler";
+import { effectiveTier } from "@/lib/subscription";
 import { searchRecentTweets, analyzeSentiment } from "@/lib/exchanges/twitter";
 import type { SubscriptionTier } from "@/types";
 
@@ -58,7 +59,7 @@ export async function GET(req: NextRequest) {
       // free
     }
 
-    if (tier === "free") {
+    if (effectiveTier(tier) === "free") {
       return NextResponse.json(
         { error: "Pro 이상 구독이 필요합니다", upgrade: true },
         { status: 403 },

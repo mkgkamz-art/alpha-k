@@ -3,9 +3,28 @@
  *
  * Client-side: use useAuthStore() isPro / isWhale / tier
  * Server-side: use isProUser() / isWhaleUser()
+ *
+ * Open Beta: NEXT_PUBLIC_OPEN_BETA_UNTIL 환경변수로 종료일 제어.
+ * 오픈 베타 기간 중 모든 유저가 whale 티어 접근 가능.
  */
 
 import type { SubscriptionTier } from "@/types";
+
+/* ── Open Beta ── */
+
+const OPEN_BETA_UNTIL = process.env.NEXT_PUBLIC_OPEN_BETA_UNTIL;
+
+/** 오픈 베타 기간인지 확인 */
+export function isOpenBeta(): boolean {
+  if (!OPEN_BETA_UNTIL) return false;
+  return new Date() < new Date(OPEN_BETA_UNTIL);
+}
+
+/** 오픈 베타면 whale, 아니면 원래 티어 반환 */
+export function effectiveTier(tier: SubscriptionTier | null): SubscriptionTier {
+  if (isOpenBeta()) return "whale";
+  return tier ?? "free";
+}
 
 /* ── Access Matrix ── */
 
@@ -80,23 +99,24 @@ export const ACCESS_MATRIX = {
 
 /* ── Helper functions ── */
 
-/** Get feature access for a given tier (defaults to 'free') */
+/** Get feature access for a given tier (defaults to 'free', open beta → whale) */
 export function getAccess<K extends keyof typeof ACCESS_MATRIX>(
   feature: K,
   tier: SubscriptionTier | null,
 ) {
-  const t = tier ?? "free";
+  const t = effectiveTier(tier);
   return ACCESS_MATRIX[feature][t] as (typeof ACCESS_MATRIX)[K]["free"];
 }
 
-/** Server-side: check if tier is Pro or Whale */
+/** Server-side: check if tier is Pro or Whale (open beta → true) */
 export function isProUser(tier: SubscriptionTier | null): boolean {
-  return tier === "pro" || tier === "whale";
+  const t = effectiveTier(tier);
+  return t === "pro" || t === "whale";
 }
 
-/** Server-side: check if tier is Whale */
+/** Server-side: check if tier is Whale (open beta → true) */
 export function isWhaleUser(tier: SubscriptionTier | null): boolean {
-  return tier === "whale";
+  return effectiveTier(tier) === "whale";
 }
 
 /** LISTING_DELAY_MS: 30 minutes in ms */

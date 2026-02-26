@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { withCache } from "@/lib/api-error-handler";
 import { FREE_TRADE_LIMIT, serializeTrade } from "@/lib/whale-api";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 import type { Database } from "@/types/database.types";
 
@@ -107,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     const allTrades = trades ?? [];
     const visibleTrades =
-      tier === "free" ? allTrades.slice(0, FREE_TRADE_LIMIT) : allTrades;
+      effectiveTier(tier) === "free" ? allTrades.slice(0, FREE_TRADE_LIMIT) : allTrades;
     const lockedCount = allTrades.length - visibleTrades.length;
 
     // Batch fetch whale info

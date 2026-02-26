@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { withCache } from "@/lib/api-error-handler";
-import { getAccess } from "@/lib/subscription";
+import { getAccess, effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 
 const FREE_BUZZ_LIMIT = 3;
@@ -40,8 +40,9 @@ export async function GET(req: NextRequest) {
       // free
     }
 
+    const eTier = effectiveTier(tier);
     const access = getAccess("radar", tier);
-    const maxSignals = tier === "free" ? FREE_BUZZ_LIMIT : (access as { maxSignals: number }).maxSignals;
+    const maxSignals = eTier === "free" ? FREE_BUZZ_LIMIT : (access as { maxSignals: number }).maxSignals;
 
     const admin = createAdminClient();
     let query = admin

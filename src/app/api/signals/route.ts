@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 
 const VALID_TIMEFRAMES = new Set<string>(["4H", "1D", "1W"]);
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Check tier for locked timeframes
-    let tier = "free";
+    let tier: SubscriptionTier = "free";
     if (timeframe && LOCKED_TIMEFRAMES.has(timeframe)) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
       tier = (profile?.subscription_tier ?? "free") as SubscriptionTier;
 
-      if (tier === "free") {
+      if (effectiveTier(tier) === "free") {
         return NextResponse.json({
           signals: [],
           message: "Upgrade to Pro for 4H and 1W timeframe signals.",

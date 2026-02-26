@@ -13,6 +13,7 @@ import {
   FREE_WHALE_LIMIT,
   serializeWhaleDetail,
 } from "@/lib/whale-api";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 
 export async function GET(
@@ -67,7 +68,8 @@ export async function GET(
     }
 
     // Free tier: rank check
-    if (tier === "free") {
+    const eTier = effectiveTier(tier);
+    if (eTier === "free") {
       const { count } = await admin
         .from("whales")
         .select("*", { count: "exact", head: true })
@@ -94,7 +96,7 @@ export async function GET(
       .order("weight_pct", { ascending: false });
 
     // Fetch recent trades
-    const tradeLimit = tier === "free" ? 3 : 20;
+    const tradeLimit = eTier === "free" ? 3 : 20;
     const { data: trades } = await admin
       .from("whale_trades")
       .select("*")
@@ -116,7 +118,7 @@ export async function GET(
 
     const serialized = serializeWhaleDetail(
       whale,
-      tier,
+      eTier,
       portfolio ?? [],
       trades ?? [],
       isFollowed,

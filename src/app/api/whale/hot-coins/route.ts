@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { withCache } from "@/lib/api-error-handler";
 import { FREE_HOT_COIN_LIMIT, serializeHotCoin } from "@/lib/whale-api";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 
 export async function GET(req: NextRequest) {
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     const coins = hotCoins ?? [];
     const visibleCoins =
-      tier === "free" ? coins.slice(0, FREE_HOT_COIN_LIMIT) : coins;
+      effectiveTier(tier) === "free" ? coins.slice(0, FREE_HOT_COIN_LIMIT) : coins;
     const lockedCount = coins.length - visibleCoins.length;
 
     // Fetch top buyers per coin

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { SubscriptionTier, SubscriptionStatus } from "@/types";
+import { isOpenBeta } from "@/lib/subscription";
 
 export interface AuthUser {
   id: string;
@@ -39,15 +40,17 @@ interface AuthStore {
 }
 
 function deriveTier(user: AuthUser | null) {
+  const beta = isOpenBeta();
+
   if (!user)
     return {
-      tier: null as SubscriptionTier | null,
-      isPro: false,
-      isWhale: false,
+      tier: (beta ? "whale" : null) as SubscriptionTier | null,
+      isPro: beta,
+      isWhale: beta,
       isOnTrial: false,
       subscriptionStatus: null as SubscriptionStatus | null,
     };
-  const t = user.subscriptionTier ?? "free";
+  const t = beta ? "whale" : (user.subscriptionTier ?? "free");
   return {
     tier: t,
     isPro: t === "pro" || t === "whale",
