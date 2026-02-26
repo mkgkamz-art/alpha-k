@@ -22,7 +22,7 @@ export async function findRecentSignal(
   admin: SupabaseClient<Database>,
   symbol: string,
   signalType: RadarSignalTypeEnum,
-  withinMinutes = 60,
+  withinMinutes = 360,
 ): Promise<RadarRow | null> {
   const since = new Date(
     Date.now() - withinMinutes * 60 * 1000,

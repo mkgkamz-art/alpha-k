@@ -85,10 +85,12 @@ export function calculateRadarScore(input: ScoreInput): {
 
   switch (input.type) {
     case "surge": {
+      // 10%→50, 20%→65, 30%→75, 50%→85, 100%+→95 (never 100)
       const abs = Math.abs(input.data.changePercent);
-      if (abs >= 30) score = 100;
-      else if (abs >= 20) score = 75 + ((abs - 20) / 10) * 25;
-      else if (abs >= 10) score = 50 + ((abs - 10) / 10) * 25;
+      if (abs >= 50) score = 85 + Math.min(10, (abs - 50) / 50) * 10;
+      else if (abs >= 30) score = 75 + ((abs - 30) / 20) * 10;
+      else if (abs >= 20) score = 65 + ((abs - 20) / 10) * 10;
+      else if (abs >= 10) score = 50 + ((abs - 10) / 10) * 15;
       else score = Math.max(20, (abs / 10) * 50);
       break;
     }

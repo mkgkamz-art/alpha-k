@@ -48,9 +48,13 @@ export async function GET(req: NextRequest) {
       }
       const unique = Array.from(bestBySymbol.values());
 
-      // Filter for significant moves (>= 10% change)
+      // Filter: >= 10% change + minimum volume (1억원) to exclude micro-caps
+      const MIN_VOLUME_KRW = 100_000_000;
       const surges = unique.filter(
-        (p) => p.change_24h != null && Math.abs(p.change_24h) >= 10,
+        (p) =>
+          p.change_24h != null &&
+          Math.abs(p.change_24h) >= 10 &&
+          (p.volume_24h ?? 0) >= MIN_VOLUME_KRW,
       );
 
       for (const s of surges) {
