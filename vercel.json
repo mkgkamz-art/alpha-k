@@ -1,4 +1,33 @@
 {
+  "crons": [
+    { "path": "/api/cron/fetch-korean-prices", "schedule": "* * * * *" },
+    { "path": "/api/cron/fetch-prices", "schedule": "* * * * *" },
+    { "path": "/api/cron/check-price-alerts", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/fetch-whale-events", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/radar-surge-sync", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/detect-volume", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/detect-orderbook", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/whale-trades", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/detect-listings", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/update-defi-health", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/update-liquidity", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/detect-buzz", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/detect-onchain", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/evaluate-results", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/whale-portfolio", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/whale-hot-coins", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/check-stablecoins", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/kimchi-history", "schedule": "0 * * * *" },
+    { "path": "/api/cron/whale-pnl", "schedule": "0 * * * *" },
+    { "path": "/api/cron/fetch-token-unlocks", "schedule": "0 */4 * * *" },
+    { "path": "/api/cron/signal-generator", "schedule": "0 */4 * * *" },
+    { "path": "/api/cron/cleanup-prices", "schedule": "0 18 * * *" },
+    { "path": "/api/cron/email-digest", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/promo-reminder", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/radar-cleanup", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/whale-discovery", "schedule": "0 4 * * *" },
+    { "path": "/api/cron/whale-hot-digest", "schedule": "0 0 * * *" }
+  ],
   "functions": {
     "api/cron/**": { "maxDuration": 30 },
     "api/**": { "maxDuration": 15 }
