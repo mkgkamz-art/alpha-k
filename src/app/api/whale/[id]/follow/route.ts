@@ -11,6 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getFollowLimit } from "@/lib/whale-api";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 
 async function getSessionInfo(): Promise<{
@@ -59,7 +60,7 @@ export async function POST(
     );
   }
 
-  const limit = getFollowLimit(session.tier);
+  const limit = getFollowLimit(effectiveTier(session.tier));
   if (limit === 0) {
     return NextResponse.json(
       {

@@ -57,6 +57,7 @@ export default function WhaleDetailPage() {
   const unfollowMut = useUnfollowWhale();
 
   const isForbidden = error && (error as { status?: number }).status === 403;
+  const isError = !!error && !isForbidden;
 
   const handleFollow = useCallback(() => {
     if (!user || !data) return;
@@ -89,6 +90,28 @@ export default function WhaleDetailPage() {
           type="button"
           onClick={() => router.back()}
           className="mt-3 text-xs text-text-secondary hover:text-text-primary"
+        >
+          ← 돌아가기
+        </button>
+      </div>
+    );
+  }
+
+  // Error (non-403)
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
+        <Fish className="w-10 h-10 text-text-disabled mb-3" />
+        <h2 className="text-base font-bold text-text-primary mb-1">
+          데이터를 불러올 수 없습니다
+        </h2>
+        <p className="text-sm text-text-secondary mb-4">
+          잠시 후 다시 시도해 주세요
+        </p>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-xs text-text-secondary hover:text-text-primary"
         >
           ← 돌아가기
         </button>

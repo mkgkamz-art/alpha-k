@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { withCache } from "@/lib/api-error-handler";
 import { serializeWhaleRanking, FREE_WHALE_LIMIT } from "@/lib/whale-api";
+import { effectiveTier } from "@/lib/subscription";
 import type { SubscriptionTier } from "@/types";
 import type { Database } from "@/types/database.types";
 
@@ -177,11 +178,12 @@ export async function GET(req: NextRequest) {
       followedIds = (follows ?? []).map((f) => f.whale_id);
     }
 
-    // Serialize
+    // Serialize (effectiveTier for open beta)
+    const eTier = effectiveTier(tier);
     const items = (whales ?? []).map((w, i) =>
       serializeWhaleRanking(
         w,
-        tier,
+        eTier,
         i,
         lastTradeMap.get(w.id) ?? null,
         holdingsMap.get(w.id),

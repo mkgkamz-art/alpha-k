@@ -63,8 +63,8 @@ export async function GET(req: NextRequest) {
       .select("*")
       .gt("expires_at", new Date().toISOString())
       .gte("score", minScore)
-      .order("score", { ascending: false })
       .order("created_at", { ascending: false })
+      .order("score", { ascending: false })
       .limit(limit);
 
     if (types.length > 0) {
