@@ -443,16 +443,23 @@ function TweetPreviewSheet({
           ) : data?.tweets && data.tweets.length > 0 ? (
             <>
               {/* Sentiment summary */}
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-bg-tertiary/50 text-xs text-text-secondary">
-                <span>
-                  🟢 긍정 {data.sentiment.positive_pct}%
-                </span>
-                <span>
-                  ⚪ 중립 {data.sentiment.neutral_pct}%
-                </span>
-                <span>
-                  🔴 부정 {data.sentiment.negative_pct}%
-                </span>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-bg-tertiary/50 text-xs text-text-secondary">
+                <div className="flex items-center gap-4">
+                  <span>
+                    🟢 긍정 {data.sentiment.positive_pct}%
+                  </span>
+                  <span>
+                    ⚪ 중립 {data.sentiment.neutral_pct}%
+                  </span>
+                  <span>
+                    🔴 부정 {data.sentiment.negative_pct}%
+                  </span>
+                </div>
+                {(data as { source?: string }).source === "analysis" && (
+                  <span className="text-[10px] text-text-disabled">
+                    소셜 분석 기반
+                  </span>
+                )}
               </div>
 
               {/* Tweets */}

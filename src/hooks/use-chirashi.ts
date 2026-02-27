@@ -31,6 +31,7 @@ interface ChirashiTweetsResponse {
     negative_pct: number;
     neutral_pct: number;
   };
+  source?: "twitter" | "analysis";
 }
 
 /* ── Buzz feed (infinite scroll) ── */
