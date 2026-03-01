@@ -18,6 +18,7 @@ import { useAuthStore } from "@/stores/auth-store";
 
 /* ── Route → title + breadcrumbs ── */
 const routeTitles: Record<string, string> = {
+  "/signal": "알파 시그널",
   "/radar": "레이더",
   "/whale": "고래 추적",
   "/chirashi": "찌라시",

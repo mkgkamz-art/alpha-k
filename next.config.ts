@@ -26,11 +26,11 @@ const nextConfig: NextConfig = {
   ],
   poweredByHeader: false,
   redirects: async () => [
-    { source: "/dashboard", destination: "/radar", permanent: false },
+    { source: "/dashboard", destination: "/signal", permanent: false },
+    { source: "/signals", destination: "/signal", permanent: false },
     { source: "/surge", destination: "/radar", permanent: false },
     { source: "/kimchi", destination: "/radar", permanent: false },
     { source: "/listing", destination: "/radar", permanent: false },
-    { source: "/signals", destination: "/radar", permanent: false },
   ],
 };
 
