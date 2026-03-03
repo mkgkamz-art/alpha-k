@@ -1307,6 +1307,156 @@ export type Database = {
           },
         ];
       };
+      alpha_signals: {
+        Row: {
+          id: string;
+          coin_symbol: string;
+          coin_name: string | null;
+          direction: "buy" | "sell";
+          strength: "strong_buy" | "buy" | "weak_buy" | "weak_sell" | "sell" | "strong_sell";
+          alpha_score: number;
+          convergence_grade: "perfect" | "strong";
+          convergence_sources: Json;
+          score_breakdown: Json;
+          historical_accuracy: Json | null;
+          price_at_signal: number | null;
+          created_at: string;
+          expired_at: string;
+          status: "active" | "expired" | "hit" | "missed";
+        };
+        Insert: {
+          id?: string;
+          coin_symbol: string;
+          coin_name?: string | null;
+          direction: "buy" | "sell";
+          strength: "strong_buy" | "buy" | "weak_buy" | "weak_sell" | "sell" | "strong_sell";
+          alpha_score: number;
+          convergence_grade: "perfect" | "strong";
+          convergence_sources?: Json;
+          score_breakdown?: Json;
+          historical_accuracy?: Json | null;
+          price_at_signal?: number | null;
+          created_at?: string;
+          expired_at?: string;
+          status?: "active" | "expired" | "hit" | "missed";
+        };
+        Update: {
+          id?: string;
+          coin_symbol?: string;
+          coin_name?: string | null;
+          direction?: "buy" | "sell";
+          strength?: "strong_buy" | "buy" | "weak_buy" | "weak_sell" | "sell" | "strong_sell";
+          alpha_score?: number;
+          convergence_grade?: "perfect" | "strong";
+          convergence_sources?: Json;
+          score_breakdown?: Json;
+          historical_accuracy?: Json | null;
+          price_at_signal?: number | null;
+          expired_at?: string;
+          status?: "active" | "expired" | "hit" | "missed";
+        };
+        Relationships: [];
+      };
+      alpha_signal_results: {
+        Row: {
+          id: string;
+          signal_id: string;
+          price_at_signal: number | null;
+          price_after_1h: number | null;
+          price_after_4h: number | null;
+          price_after_24h: number | null;
+          return_1h_pct: number | null;
+          return_4h_pct: number | null;
+          return_24h_pct: number | null;
+          max_return_pct: number | null;
+          is_hit: boolean | null;
+          evaluated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          signal_id: string;
+          price_at_signal?: number | null;
+          price_after_1h?: number | null;
+          price_after_4h?: number | null;
+          price_after_24h?: number | null;
+          return_1h_pct?: number | null;
+          return_4h_pct?: number | null;
+          return_24h_pct?: number | null;
+          max_return_pct?: number | null;
+          is_hit?: boolean | null;
+          evaluated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          signal_id?: string;
+          price_at_signal?: number | null;
+          price_after_1h?: number | null;
+          price_after_4h?: number | null;
+          price_after_24h?: number | null;
+          return_1h_pct?: number | null;
+          return_4h_pct?: number | null;
+          return_24h_pct?: number | null;
+          max_return_pct?: number | null;
+          is_hit?: boolean | null;
+          evaluated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alpha_signal_results_signal_id_fkey";
+            columns: ["signal_id"];
+            isOneToOne: true;
+            referencedRelation: "alpha_signals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      alpha_signal_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          min_alpha_score: number;
+          min_convergence: "strong" | "perfect";
+          direction_filter: "all" | "buy_only" | "sell_only";
+          alert_telegram: boolean;
+          alert_push: boolean;
+          alert_sound: boolean;
+          coins_watchlist: Json | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          min_alpha_score?: number;
+          min_convergence?: "strong" | "perfect";
+          direction_filter?: "all" | "buy_only" | "sell_only";
+          alert_telegram?: boolean;
+          alert_push?: boolean;
+          alert_sound?: boolean;
+          coins_watchlist?: Json | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          min_alpha_score?: number;
+          min_convergence?: "strong" | "perfect";
+          direction_filter?: "all" | "buy_only" | "sell_only";
+          alert_telegram?: boolean;
+          alert_push?: boolean;
+          alert_sound?: boolean;
+          coins_watchlist?: Json | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alpha_signal_subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1332,6 +1482,12 @@ export type Database = {
       whale_chain: "ethereum" | "bsc" | "solana" | "arbitrum" | "base" | "multi";
       whale_tier: "s" | "a" | "b" | "c";
       whale_trade_type: "buy" | "sell";
+      alpha_direction: "buy" | "sell";
+      alpha_strength: "strong_buy" | "buy" | "weak_buy" | "weak_sell" | "sell" | "strong_sell";
+      alpha_grade: "perfect" | "strong";
+      alpha_status: "active" | "expired" | "hit" | "missed";
+      alpha_direction_filter: "all" | "buy_only" | "sell_only";
+      alpha_min_convergence: "strong" | "perfect";
     };
     CompositeTypes: {
       [_ in never]: never;
